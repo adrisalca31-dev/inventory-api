@@ -5,3 +5,6 @@ class ProductCreate(BaseModel):
     name: str
     price: float = Field(gt=0)
     stock: int = Field(ge=0)
+
+class ProductUpdate(ProductCreate):
+    pass
