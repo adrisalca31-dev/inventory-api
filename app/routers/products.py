@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -16,7 +16,7 @@ router = APIRouter(
 )
 
 
-@router.post("")
+@router.post("", status_code=status.HTTP_201_CREATED)
 def create_product(
     product: ProductCreate,
     db: Session = Depends(get_db)
@@ -38,7 +38,10 @@ def update_product(
     db_product = crud_update_product(db, product_id, product)
 
     if db_product is None:
-        return {"error": "Product not found"}
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Product not found"
+        )
 
     return db_product
 
@@ -51,6 +54,9 @@ def delete_product(
     deleted = crud_delete_product(db, product_id)
 
     if not deleted:
-        return {"message": "Product not found"}
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Product not found"
+        )
 
     return {"message": "Product deleted successfully"}
