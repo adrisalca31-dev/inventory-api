@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.schemas import ProductCreate, ProductUpdate
+from app.schemas import ProductCreate, ProductUpdate, ProductResponse
 from app.crud import (
     create_product as crud_create_product,
     get_products as crud_get_products,
@@ -16,7 +16,11 @@ router = APIRouter(
 )
 
 
-@router.post("", status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    status_code=status.HTTP_201_CREATED,
+    response_model=ProductResponse
+)
 def create_product(
     product: ProductCreate,
     db: Session = Depends(get_db)
@@ -24,12 +28,12 @@ def create_product(
     return crud_create_product(db, product)
 
 
-@router.get("")
+@router.get("", response_model=list[ProductResponse])
 def get_products(db: Session = Depends(get_db)):
     return crud_get_products(db)
 
 
-@router.put("/{product_id}")
+@router.put("/{product_id}", response_model=ProductResponse)
 def update_product(
     product_id: int,
     product: ProductUpdate,

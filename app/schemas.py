@@ -8,3 +8,13 @@ class ProductCreate(BaseModel):
 
 class ProductUpdate(ProductCreate):
     pass
+
+class ProductResponse(BaseModel):
+    id: int
+    name: str
+    price: float
+    stock: int
+
+    model_config = {
+        "from_attributes": True
+    }
