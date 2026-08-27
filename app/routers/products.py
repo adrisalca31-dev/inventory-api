@@ -11,6 +11,7 @@ from app.schemas import (
 from app.crud import (
     create_product as crud_create_product,
     get_products as crud_get_products,
+    get_product as crud_get_product,
     update_product as crud_update_product,
     delete_product as crud_delete_product,
 )
@@ -37,6 +38,24 @@ def create_product(
 def get_products(db: Session = Depends(get_db)):
     return crud_get_products(db)
 
+@router.get(
+    "/{product_id}",
+    response_model=ProductResponse,
+    responses={404: {"model": ErrorResponse}}
+)
+def get_product(
+    product_id: int,
+    db: Session = Depends(get_db)
+):
+    db_product = crud_get_product(db, product_id)
+
+    if db_product is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Product not found"
+        )
+
+    return db_product
 
 @router.put(
     "/{product_id}",

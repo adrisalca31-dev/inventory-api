@@ -91,3 +91,35 @@ def test_delete_product():
     assert response.json() == {
         "message": "Product deleted successfully"
     }
+
+def test_get_product():
+    create_response = client.post(
+        "/products",
+        json={
+            "name": "Get One Test",
+            "price": 25.00,
+            "stock": 7
+        }
+    )
+
+    product_id = create_response.json()["id"]
+
+    response = client.get(f"/products/{product_id}")
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["id"] == product_id
+    assert data["name"] == "Get One Test"
+    assert data["price"] == 25.00
+    assert data["stock"] == 7
+
+
+def test_get_product_not_found():
+    response = client.get("/products/999999")
+
+    assert response.status_code == 404
+    assert response.json() == {
+        "detail": "Product not found"
+    }   

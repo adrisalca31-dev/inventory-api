@@ -61,3 +61,10 @@ def delete_product(db: Session, product_id: int):
     db.commit()
 
     return True
+
+def get_product(db: Session, product_id: int):
+    statement = select(Product).where(Product.id == product_id)
+
+    result = db.execute(statement)
+
+    return result.scalar_one_or_none()
