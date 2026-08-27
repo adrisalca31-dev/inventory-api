@@ -1,3 +1,4 @@
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models import Product
@@ -19,11 +20,19 @@ def create_product(db: Session, product: ProductCreate):
 
 
 def get_products(db: Session):
-    return db.query(Product).all()
+    statement = select(Product)
+
+    result = db.execute(statement)
+
+    return result.scalars().all()
 
 
 def update_product(db: Session, product_id: int, product: ProductUpdate):
-    db_product = db.query(Product).filter(Product.id == product_id).first()
+    statement = select(Product).where(Product.id == product_id)
+
+    result = db.execute(statement)
+
+    db_product = result.scalar_one_or_none()
 
     if db_product is None:
         return None
@@ -39,7 +48,11 @@ def update_product(db: Session, product_id: int, product: ProductUpdate):
 
 
 def delete_product(db: Session, product_id: int):
-    product = db.query(Product).filter(Product.id == product_id).first()
+    statement = select(Product).where(Product.id == product_id)
+
+    result = db.execute(statement)
+
+    product = result.scalar_one_or_none()
 
     if product is None:
         return False
