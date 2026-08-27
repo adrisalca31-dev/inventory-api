@@ -18,3 +18,6 @@ class ProductResponse(BaseModel):
     model_config = {
         "from_attributes": True
     }
+
+class ErrorResponse(BaseModel):
+    detail: str
