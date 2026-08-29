@@ -12,9 +12,13 @@ def create_product(db: Session, product: ProductCreate):
         stock=product.stock
     )
 
-    db.add(db_product)
-    db.commit()
-    db.refresh(db_product)
+    try:
+        db.add(db_product)
+        db.commit()
+        db.refresh(db_product)
+    except Exception:
+        db.rollback()
+        raise
 
     return db_product
 
@@ -25,6 +29,14 @@ def get_products(db: Session):
     result = db.execute(statement)
 
     return result.scalars().all()
+
+
+def get_product(db: Session, product_id: int):
+    statement = select(Product).where(Product.id == product_id)
+
+    result = db.execute(statement)
+
+    return result.scalar_one_or_none()
 
 
 def update_product(db: Session, product_id: int, product: ProductUpdate):
@@ -41,8 +53,12 @@ def update_product(db: Session, product_id: int, product: ProductUpdate):
     db_product.price = product.price
     db_product.stock = product.stock
 
-    db.commit()
-    db.refresh(db_product)
+    try:
+        db.commit()
+        db.refresh(db_product)
+    except Exception:
+        db.rollback()
+        raise
 
     return db_product
 
@@ -57,14 +73,11 @@ def delete_product(db: Session, product_id: int):
     if product is None:
         return False
 
-    db.delete(product)
-    db.commit()
+    try:
+        db.delete(product)
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
 
     return True
-
-def get_product(db: Session, product_id: int):
-    statement = select(Product).where(Product.id == product_id)
-
-    result = db.execute(statement)
-
-    return result.scalar_one_or_none()
