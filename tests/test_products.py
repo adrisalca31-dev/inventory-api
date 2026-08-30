@@ -140,3 +140,41 @@ def test_delete_product_not_found(client):
     assert response.json() == {
         "detail": "Product not found"
     }
+
+def test_create_product_rejects_negative_price(client):
+    response = client.post(
+        "/products",
+        json={
+            "name": "Invalid Product",
+            "price": -10.00,
+            "stock": 5
+        }
+    )
+
+    assert response.status_code == 422
+
+
+def test_create_product_rejects_negative_stock(client):
+    response = client.post(
+        "/products",
+        json={
+            "name": "Invalid Product",
+            "price": 10.00,
+            "stock": -5
+        }
+    )
+
+    assert response.status_code == 422
+
+
+def test_create_product_rejects_empty_name(client):
+    response = client.post(
+        "/products",
+        json={
+            "name": "",
+            "price": 10.00,
+            "stock": 5
+        }
+    )
+
+    assert response.status_code == 422
