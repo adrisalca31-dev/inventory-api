@@ -116,3 +116,27 @@ def test_get_product_not_found(client):
     assert response.json() == {
         "detail": "Product not found"
     }
+
+def test_update_product_not_found(client):
+    response = client.put(
+        "/products/999999",
+        json={
+            "name": "Nonexistent Product",
+            "price": 50.00,
+            "stock": 10
+        }
+    )
+
+    assert response.status_code == 404
+    assert response.json() == {
+        "detail": "Product not found"
+    }
+
+
+def test_delete_product_not_found(client):
+    response = client.delete("/products/999999")
+
+    assert response.status_code == 404
+    assert response.json() == {
+        "detail": "Product not found"
+    }
