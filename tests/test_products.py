@@ -1,12 +1,4 @@
-from fastapi.testclient import TestClient
-
-from app.main import app
-
-
-client = TestClient(app)
-
-
-def test_root():
+def test_root(client):
     response = client.get("/")
 
     assert response.status_code == 200
@@ -15,7 +7,7 @@ def test_root():
     }
 
 
-def test_create_product():
+def test_create_product(client):
     response = client.post(
         "/products",
         json={
@@ -35,14 +27,14 @@ def test_create_product():
     assert "id" in data
 
 
-def test_get_products():
+def test_get_products(client):
     response = client.get("/products")
 
     assert response.status_code == 200
     assert isinstance(response.json(), list)
 
 
-def test_update_product():
+def test_update_product(client):
     create_response = client.post(
         "/products",
         json={
@@ -73,7 +65,7 @@ def test_update_product():
     assert data["stock"] == 8
 
 
-def test_delete_product():
+def test_delete_product(client):
     create_response = client.post(
         "/products",
         json={
@@ -92,7 +84,8 @@ def test_delete_product():
         "message": "Product deleted successfully"
     }
 
-def test_get_product():
+
+def test_get_product(client):
     create_response = client.post(
         "/products",
         json={
@@ -116,10 +109,10 @@ def test_get_product():
     assert data["stock"] == 7
 
 
-def test_get_product_not_found():
+def test_get_product_not_found(client):
     response = client.get("/products/999999")
 
     assert response.status_code == 404
     assert response.json() == {
         "detail": "Product not found"
-    }   
+    }
