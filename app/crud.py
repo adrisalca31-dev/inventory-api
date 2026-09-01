@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.models import Product
@@ -24,6 +24,9 @@ def create_product(db: Session, product: ProductCreate):
 
 
 def get_products(db: Session, skip: int = 0, limit: int = 10):
+    count_statement = select(func.count()).select_from(Product)
+    total = db.execute(count_statement).scalar_one()
+
     statement = (
         select(Product)
         .offset(skip)
@@ -31,8 +34,12 @@ def get_products(db: Session, skip: int = 0, limit: int = 10):
     )
 
     result = db.execute(statement)
+    products = result.scalars().all()
 
-    return result.scalars().all()
+    return {
+        "items": products,
+        "total": total
+    }
 
 
 def get_product(db: Session, product_id: int):

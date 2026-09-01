@@ -22,5 +22,10 @@ class ProductResponse(BaseModel):
     }
 
 
+class ProductListResponse(BaseModel):
+    items: list[ProductResponse]
+    total: int
+
+
 class ErrorResponse(BaseModel):
     detail: str

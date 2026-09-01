@@ -46,9 +46,10 @@ def test_get_products(client):
 
     data = response.json()
 
-    assert len(data) == 2
-    assert data[0]["name"] == "Product 0"
-    assert data[1]["name"] == "Product 1"
+    assert len(data["items"]) == 2
+    assert data["total"] == 5
+    assert data["items"][0]["name"] == "Product 0"
+    assert data["items"][1]["name"] == "Product 1"
 
 
 def test_get_products_pagination(client):
@@ -70,9 +71,10 @@ def test_get_products_pagination(client):
 
     data = response.json()
 
-    assert len(data) == 2
-    assert data[0]["name"] == "Product 2"
-    assert data[1]["name"] == "Product 3"
+    assert len(data["items"]) == 2
+    assert data["total"] == 5
+    assert data["items"][0]["name"] == "Product 2"
+    assert data["items"][1]["name"] == "Product 3"
 
 
 def test_get_product(client):

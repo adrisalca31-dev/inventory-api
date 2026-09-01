@@ -7,6 +7,7 @@ from app.schemas import (
     ProductCreate,
     ProductUpdate,
     ProductResponse,
+    ProductListResponse,
     ErrorResponse,
 )
 from app.crud import (
@@ -38,7 +39,7 @@ def create_product(
 
 @router.get(
     "",
-    response_model=list[ProductResponse]
+    response_model=ProductListResponse
 )
 def get_products(
     skip: int = Query(default=0, ge=0),
