@@ -23,8 +23,12 @@ def create_product(db: Session, product: ProductCreate):
     return db_product
 
 
-def get_products(db: Session):
-    statement = select(Product)
+def get_products(db: Session, skip: int = 0, limit: int = 10):
+    statement = (
+        select(Product)
+        .offset(skip)
+        .limit(limit)
+    )
 
     result = db.execute(statement)
 

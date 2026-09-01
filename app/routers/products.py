@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 
 from app.exceptions import product_not_found
@@ -40,8 +40,12 @@ def create_product(
     "",
     response_model=list[ProductResponse]
 )
-def get_products(db: Session = Depends(get_db)):
-    return crud_get_products(db)
+def get_products(
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=10, ge=1, le=100),
+    db: Session = Depends(get_db)
+):
+    return crud_get_products(db, skip=skip, limit=limit)
 
 
 @router.get(

@@ -11,8 +11,8 @@ def test_create_product(client):
     response = client.post(
         "/products",
         json={
-            "name": "Test Keyboard",
-            "price": 50.00,
+            "name": "Laptop",
+            "price": 1200.50,
             "stock": 10
         }
     )
@@ -21,77 +21,67 @@ def test_create_product(client):
 
     data = response.json()
 
-    assert data["name"] == "Test Keyboard"
-    assert data["price"] == 50.00
+    assert data["id"] == 1
+    assert data["name"] == "Laptop"
+    assert data["price"] == 1200.50
     assert data["stock"] == 10
-    assert "id" in data
 
 
 def test_get_products(client):
-    response = client.get("/products")
+    for i in range(5):
+        response = client.post(
+            "/products",
+            json={
+                "name": f"Product {i}",
+                "price": 100 + i,
+                "stock": 10 + i
+            }
+        )
 
-    assert response.status_code == 200
-    assert isinstance(response.json(), list)
+        assert response.status_code == 201
 
-
-def test_update_product(client):
-    create_response = client.post(
-        "/products",
-        json={
-            "name": "Update Test",
-            "price": 20.00,
-            "stock": 5
-        }
-    )
-
-    product_id = create_response.json()["id"]
-
-    response = client.put(
-        f"/products/{product_id}",
-        json={
-            "name": "Updated Product",
-            "price": 30.00,
-            "stock": 8
-        }
-    )
+    response = client.get("/products?skip=0&limit=2")
 
     assert response.status_code == 200
 
     data = response.json()
 
-    assert data["id"] == product_id
-    assert data["name"] == "Updated Product"
-    assert data["price"] == 30.00
-    assert data["stock"] == 8
+    assert len(data) == 2
+    assert data[0]["name"] == "Product 0"
+    assert data[1]["name"] == "Product 1"
 
 
-def test_delete_product(client):
-    create_response = client.post(
-        "/products",
-        json={
-            "name": "Delete Test",
-            "price": 10.00,
-            "stock": 3
-        }
-    )
+def test_get_products_pagination(client):
+    for i in range(5):
+        response = client.post(
+            "/products",
+            json={
+                "name": f"Product {i}",
+                "price": 100 + i,
+                "stock": 10 + i
+            }
+        )
 
-    product_id = create_response.json()["id"]
+        assert response.status_code == 201
 
-    response = client.delete(f"/products/{product_id}")
+    response = client.get("/products?skip=2&limit=2")
 
     assert response.status_code == 200
-    assert response.json() == {
-        "message": "Product deleted successfully"
-    }
+
+    data = response.json()
+
+    assert len(data) == 2
+    assert data[0]["name"] == "Product 2"
+    assert data[1]["name"] == "Product 3"
 
 
 def test_get_product(client):
     create_response = client.post(
         "/products",
         json={
-            "name": "Get One Test",
-            "price": 25.00,
-            "stock": 7
+            "name": "Mouse",
+            "price": 25.99,
+            "stock": 20
         }
     )
 
@@ -104,76 +94,133 @@ def test_get_product(client):
     data = response.json()
 
     assert data["id"] == product_id
-    assert data["name"] == "Get One Test"
-    assert data["price"] == 25.00
-    assert data["stock"] == 7
+    assert data["name"] == "Mouse"
+    assert data["price"] == 25.99
+    assert data["stock"] == 20
 
 
 def test_get_product_not_found(client):
-    response = client.get("/products/999999")
+    response = client.get("/products/999")
 
     assert response.status_code == 404
     assert response.json() == {
         "detail": "Product not found"
     }
 
-def test_update_product_not_found(client):
-    response = client.put(
-        "/products/999999",
+
+def test_update_product(client):
+    create_response = client.post(
+        "/products",
         json={
-            "name": "Nonexistent Product",
+            "name": "Keyboard",
             "price": 50.00,
+            "stock": 15
+        }
+    )
+
+    product_id = create_response.json()["id"]
+
+    response = client.put(
+        f"/products/{product_id}",
+        json={
+            "name": "Mechanical Keyboard",
+            "price": 85.00,
             "stock": 10
         }
     )
 
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["id"] == product_id
+    assert data["name"] == "Mechanical Keyboard"
+    assert data["price"] == 85.00
+    assert data["stock"] == 10
+
+
+def test_update_product_not_found(client):
+    response = client.put(
+        "/products/999",
+        json={
+            "name": "Keyboard",
+            "price": 50.00,
+            "stock": 15
+        }
+    )
+
     assert response.status_code == 404
     assert response.json() == {
         "detail": "Product not found"
     }
 
 
-def test_delete_product_not_found(client):
-    response = client.delete("/products/999999")
-
-    assert response.status_code == 404
-    assert response.json() == {
-        "detail": "Product not found"
-    }
-
-def test_create_product_rejects_negative_price(client):
-    response = client.post(
+def test_delete_product(client):
+    create_response = client.post(
         "/products",
         json={
-            "name": "Invalid Product",
-            "price": -10.00,
+            "name": "Monitor",
+            "price": 300.00,
             "stock": 5
         }
     )
 
-    assert response.status_code == 422
+    product_id = create_response.json()["id"]
+
+    response = client.delete(f"/products/{product_id}")
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "message": "Product deleted successfully"
+    }
+
+    get_response = client.get(f"/products/{product_id}")
+
+    assert get_response.status_code == 404
 
 
-def test_create_product_rejects_negative_stock(client):
+def test_delete_product_not_found(client):
+    response = client.delete("/products/999")
+
+    assert response.status_code == 404
+    assert response.json() == {
+        "detail": "Product not found"
+    }
+
+
+def test_create_product_invalid_price(client):
     response = client.post(
         "/products",
         json={
-            "name": "Invalid Product",
-            "price": 10.00,
-            "stock": -5
+            "name": "Laptop",
+            "price": 0,
+            "stock": 10
         }
     )
 
     assert response.status_code == 422
 
 
-def test_create_product_rejects_empty_name(client):
+def test_create_product_invalid_stock(client):
+    response = client.post(
+        "/products",
+        json={
+            "name": "Laptop",
+            "price": 1000,
+            "stock": -1
+        }
+    )
+
+    assert response.status_code == 422
+
+
+def test_create_product_empty_name(client):
     response = client.post(
         "/products",
         json={
             "name": "",
-            "price": 10.00,
-            "stock": 5
+            "price": 1000,
+            "stock": 10
         }
     )
 
