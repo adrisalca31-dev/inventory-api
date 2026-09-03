@@ -23,12 +23,26 @@ def create_product(db: Session, product: ProductCreate):
     return db_product
 
 
-def get_products(db: Session, skip: int = 0, limit: int = 10):
+def get_products(
+    db: Session,
+    skip: int = 0,
+    limit: int = 10,
+    sort_by: str = "name",
+    order: str = "asc"
+):
     count_statement = select(func.count()).select_from(Product)
     total = db.execute(count_statement).scalar_one()
 
+    sort_column = getattr(Product, sort_by)
+
+    if order == "desc":
+        sort_column = sort_column.desc()
+    else:
+        sort_column = sort_column.asc()
+
     statement = (
         select(Product)
+        .order_by(sort_column)
         .offset(skip)
         .limit(limit)
     )

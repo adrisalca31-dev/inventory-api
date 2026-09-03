@@ -109,6 +109,79 @@ def test_get_product_not_found(client):
         "detail": "Product not found"
     }
 
+def test_get_products_sort_by_price_desc(client):
+    products = [
+        {
+            "name": "Laptop",
+            "price": 1200,
+            "stock": 5
+        },
+        {
+            "name": "Mouse",
+            "price": 25,
+            "stock": 20
+        },
+        {
+            "name": "Monitor",
+            "price": 300,
+            "stock": 10
+        }
+    ]
+
+    for product in products:
+        response = client.post("/products", json=product)
+        assert response.status_code == 201
+
+    response = client.get(
+        "/products?sort_by=price&order=desc"
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["total"] == 3
+    assert data["items"][0]["name"] == "Laptop"
+    assert data["items"][1]["name"] == "Monitor"
+    assert data["items"][2]["name"] == "Mouse"
+
+
+def test_get_products_sort_by_name_asc(client):
+    products = [
+        {
+            "name": "Mouse",
+            "price": 25,
+            "stock": 20
+        },
+        {
+            "name": "Laptop",
+            "price": 1200,
+            "stock": 5
+        },
+        {
+            "name": "Monitor",
+            "price": 300,
+            "stock": 10
+        }
+    ]
+
+    for product in products:
+        response = client.post("/products", json=product)
+        assert response.status_code == 201
+
+    response = client.get(
+        "/products?sort_by=name&order=asc"
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["total"] == 3
+    assert data["items"][0]["name"] == "Laptop"
+    assert data["items"][1]["name"] == "Monitor"
+    assert data["items"][2]["name"] == "Mouse"
+
 
 def test_update_product(client):
     create_response = client.post(

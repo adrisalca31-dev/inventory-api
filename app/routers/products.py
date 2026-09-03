@@ -1,3 +1,5 @@
+from typing import Literal
+
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 
@@ -44,9 +46,17 @@ def create_product(
 def get_products(
     skip: int = Query(default=0, ge=0),
     limit: int = Query(default=10, ge=1, le=100),
+    sort_by: Literal["name", "price", "stock"] = "name",
+    order: Literal["asc", "desc"] = "asc",
     db: Session = Depends(get_db)
 ):
-    return crud_get_products(db, skip=skip, limit=limit)
+    return crud_get_products(
+        db,
+        skip=skip,
+        limit=limit,
+        sort_by=sort_by,
+        order=order
+    )
 
 
 @router.get(
