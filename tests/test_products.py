@@ -182,6 +182,20 @@ def test_get_products_sort_by_name_asc(client):
     assert data["items"][1]["name"] == "Monitor"
     assert data["items"][2]["name"] == "Mouse"
 
+def test_get_products_invalid_sort_by(client):
+    response = client.get(
+        "/products?sort_by=color"
+    )
+
+    assert response.status_code == 422
+
+
+def test_get_products_invalid_order(client):
+    response = client.get(
+        "/products?sort_by=price&order=random"
+    )
+
+    assert response.status_code == 422
 
 def test_update_product(client):
     create_response = client.post(
