@@ -453,3 +453,46 @@ def test_create_product_empty_name(client):
     )
 
     assert response.status_code == 422
+
+def test_get_products_search_with_sorting(client):
+    products = [
+        {
+            "name": "Laptop",
+            "price": 1200,
+            "stock": 5
+        },
+        {
+            "name": "Gaming Laptop",
+            "price": 1500,
+            "stock": 3
+        },
+        {
+            "name": "Laptop Stand",
+            "price": 50,
+            "stock": 15
+        },
+        {
+            "name": "Mouse",
+            "price": 25,
+            "stock": 20
+        }
+    ]
+
+    for product in products:
+        response = client.post("/products", json=product)
+        assert response.status_code == 201
+
+    response = client.get(
+        "/products?search=laptop&sort_by=price&order=desc"
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["total"] == 3
+    assert len(data["items"]) == 3
+
+    assert data["items"][0]["name"] == "Gaming Laptop"
+    assert data["items"][1]["name"] == "Laptop"
+    assert data["items"][2]["name"] == "Laptop Stand"
