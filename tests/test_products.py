@@ -77,38 +77,6 @@ def test_get_products_pagination(client):
     assert data["items"][1]["name"] == "Product 3"
 
 
-def test_get_product(client):
-    create_response = client.post(
-        "/products",
-        json={
-            "name": "Mouse",
-            "price": 25.99,
-            "stock": 20
-        }
-    )
-
-    product_id = create_response.json()["id"]
-
-    response = client.get(f"/products/{product_id}")
-
-    assert response.status_code == 200
-
-    data = response.json()
-
-    assert data["id"] == product_id
-    assert data["name"] == "Mouse"
-    assert data["price"] == 25.99
-    assert data["stock"] == 20
-
-
-def test_get_product_not_found(client):
-    response = client.get("/products/999")
-
-    assert response.status_code == 404
-    assert response.json() == {
-        "detail": "Product not found"
-    }
-
 def test_get_products_sort_by_price_desc(client):
     products = [
         {
@@ -182,6 +150,7 @@ def test_get_products_sort_by_name_asc(client):
     assert data["items"][1]["name"] == "Monitor"
     assert data["items"][2]["name"] == "Mouse"
 
+
 def test_get_products_invalid_sort_by(client):
     response = client.get(
         "/products?sort_by=color"
@@ -196,6 +165,176 @@ def test_get_products_invalid_order(client):
     )
 
     assert response.status_code == 422
+
+
+def test_get_products_search_by_name(client):
+    products = [
+        {
+            "name": "Laptop",
+            "price": 1200,
+            "stock": 5
+        },
+        {
+            "name": "Mouse",
+            "price": 25,
+            "stock": 20
+        },
+        {
+            "name": "Gaming Laptop",
+            "price": 1500,
+            "stock": 3
+        }
+    ]
+
+    for product in products:
+        response = client.post("/products", json=product)
+        assert response.status_code == 201
+
+    response = client.get("/products?search=laptop")
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["total"] == 2
+    assert len(data["items"]) == 2
+    assert data["items"][0]["name"] == "Gaming Laptop"
+    assert data["items"][1]["name"] == "Laptop"
+
+
+def test_get_products_search_case_insensitive(client):
+    products = [
+        {
+            "name": "Laptop",
+            "price": 1200,
+            "stock": 5
+        },
+        {
+            "name": "MOUSE",
+            "price": 25,
+            "stock": 20
+        },
+        {
+            "name": "Monitor",
+            "price": 300,
+            "stock": 10
+        }
+    ]
+
+    for product in products:
+        response = client.post("/products", json=product)
+        assert response.status_code == 201
+
+    response = client.get("/products?search=mouse")
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["total"] == 1
+    assert len(data["items"]) == 1
+    assert data["items"][0]["name"] == "MOUSE"
+
+
+def test_get_products_search_no_results(client):
+    products = [
+        {
+            "name": "Laptop",
+            "price": 1200,
+            "stock": 5
+        },
+        {
+            "name": "Mouse",
+            "price": 25,
+            "stock": 20
+        }
+    ]
+
+    for product in products:
+        response = client.post("/products", json=product)
+        assert response.status_code == 201
+
+    response = client.get("/products?search=keyboard")
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["total"] == 0
+    assert data["items"] == []
+
+
+def test_get_product(client):
+    create_response = client.post(
+        "/products",
+        json={
+            "name": "Mouse",
+            "price": 25.99,
+            "stock": 20
+        }
+    )
+
+    product_id = create_response.json()["id"]
+
+    response = client.get(f"/products/{product_id}")
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["id"] == product_id
+    assert data["name"] == "Mouse"
+    assert data["price"] == 25.99
+    assert data["stock"] == 20
+
+
+def test_get_product_not_found(client):
+    response = client.get("/products/999")
+
+    assert response.status_code == 404
+    assert response.json() == {
+        "detail": "Product not found"
+    }
+
+def test_get_products_search_with_pagination(client):
+    products = [
+        {
+            "name": "Laptop",
+            "price": 1200,
+            "stock": 5
+        },
+        {
+            "name": "Gaming Laptop",
+            "price": 1500,
+            "stock": 3
+        },
+        {
+            "name": "Laptop Stand",
+            "price": 50,
+            "stock": 15
+        },
+        {
+            "name": "Mouse",
+            "price": 25,
+            "stock": 20
+        }
+    ]
+
+    for product in products:
+        response = client.post("/products", json=product)
+        assert response.status_code == 201
+
+    response = client.get(
+        "/products?search=laptop&skip=1&limit=1"
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["total"] == 3
+    assert len(data["items"]) == 1
+    assert data["items"][0]["name"] == "Laptop"
 
 def test_update_product(client):
     create_response = client.post(

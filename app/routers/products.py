@@ -48,6 +48,7 @@ def get_products(
     limit: int = Query(default=10, ge=1, le=100),
     sort_by: Literal["name", "price", "stock"] = "name",
     order: Literal["asc", "desc"] = "asc",
+    search: str | None = Query(default=None, min_length=1),
     db: Session = Depends(get_db)
 ):
     return crud_get_products(
@@ -55,7 +56,8 @@ def get_products(
         skip=skip,
         limit=limit,
         sort_by=sort_by,
-        order=order
+        order=order,
+        search=search
     )
 
 

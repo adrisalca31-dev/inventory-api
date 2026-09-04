@@ -28,9 +28,24 @@ def get_products(
     skip: int = 0,
     limit: int = 10,
     sort_by: str = "name",
-    order: str = "asc"
+    order: str = "asc",
+    search: str | None = None
 ):
     count_statement = select(func.count()).select_from(Product)
+
+    statement = select(Product)
+
+    if search:
+        search_pattern = f"%{search}%"
+
+        count_statement = count_statement.where(
+            Product.name.ilike(search_pattern)
+        )
+
+        statement = statement.where(
+            Product.name.ilike(search_pattern)
+        )
+
     total = db.execute(count_statement).scalar_one()
 
     sort_column = getattr(Product, sort_by)
@@ -41,7 +56,7 @@ def get_products(
         sort_column = sort_column.asc()
 
     statement = (
-        select(Product)
+        statement
         .order_by(sort_column)
         .offset(skip)
         .limit(limit)
