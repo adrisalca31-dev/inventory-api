@@ -551,3 +551,39 @@ def test_get_products_invalid_max_stock(client):
     response = client.get("/products?max_stock=-1")
 
     assert response.status_code == 422
+
+def test_get_products_combined_filters(client):
+    products = [
+        {"name": "Laptop", "price": 1200, "stock": 5},
+        {"name": "Gaming Laptop", "price": 1500, "stock": 3},
+        {"name": "Laptop Stand", "price": 50, "stock": 15},
+        {"name": "Business Laptop", "price": 1800, "stock": 10},
+        {"name": "Mouse", "price": 25, "stock": 20},
+    ]
+
+    for product in products:
+        response = client.post("/products", json=product)
+        assert response.status_code == 201
+
+    response = client.get(
+        "/products"
+        "?search=laptop"
+        "&min_stock=5"
+        "&sort_by=price"
+        "&order=desc"
+        "&skip=0"
+        "&limit=2"
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["total"] == 3
+    assert len(data["items"]) == 2
+
+    assert data["items"][0]["name"] == "Business Laptop"
+    assert data["items"][0]["price"] == 1800
+
+    assert data["items"][1]["name"] == "Laptop"
+    assert data["items"][1]["price"] == 1200
