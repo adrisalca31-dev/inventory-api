@@ -496,3 +496,47 @@ def test_get_products_search_with_sorting(client):
     assert data["items"][0]["name"] == "Gaming Laptop"
     assert data["items"][1]["name"] == "Laptop"
     assert data["items"][2]["name"] == "Laptop Stand"
+
+def test_get_products_min_stock(client):
+    products = [
+        {"name": "Laptop", "price": 1200, "stock": 5},
+        {"name": "Mouse", "price": 25, "stock": 20},
+        {"name": "Monitor", "price": 300, "stock": 10},
+    ]
+
+    for product in products:
+        response = client.post("/products", json=product)
+        assert response.status_code == 201
+
+    response = client.get("/products?min_stock=10")
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["total"] == 2
+    assert len(data["items"]) == 2
+    assert data["items"][0]["name"] == "Monitor"
+    assert data["items"][1]["name"] == "Mouse"
+
+
+def test_get_products_max_stock(client):
+    products = [
+        {"name": "Laptop", "price": 1200, "stock": 5},
+        {"name": "Mouse", "price": 25, "stock": 20},
+        {"name": "Monitor", "price": 300, "stock": 10},
+    ]
+
+    for product in products:
+        response = client.post("/products", json=product)
+        assert response.status_code == 201
+
+    response = client.get("/products?max_stock=5")
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["total"] == 1
+    assert len(data["items"]) == 1
+    assert data["items"][0]["name"] == "Laptop"

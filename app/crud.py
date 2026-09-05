@@ -29,10 +29,11 @@ def get_products(
     limit: int = 10,
     sort_by: str = "name",
     order: str = "asc",
-    search: str | None = None
+    search: str | None = None,
+    min_stock: int | None = None,
+    max_stock: int | None = None
 ):
     count_statement = select(func.count()).select_from(Product)
-
     statement = select(Product)
 
     if search:
@@ -44,6 +45,24 @@ def get_products(
 
         statement = statement.where(
             Product.name.ilike(search_pattern)
+        )
+
+    if min_stock is not None:
+        count_statement = count_statement.where(
+            Product.stock >= min_stock
+        )
+
+        statement = statement.where(
+            Product.stock >= min_stock
+        )
+
+    if max_stock is not None:
+        count_statement = count_statement.where(
+            Product.stock <= max_stock
+        )
+
+        statement = statement.where(
+            Product.stock <= max_stock
         )
 
     total = db.execute(count_statement).scalar_one()
@@ -73,7 +92,6 @@ def get_products(
 
 def get_product(db: Session, product_id: int):
     statement = select(Product).where(Product.id == product_id)
-
     result = db.execute(statement)
 
     return result.scalar_one_or_none()
@@ -81,7 +99,6 @@ def get_product(db: Session, product_id: int):
 
 def update_product(db: Session, product_id: int, product: ProductUpdate):
     statement = select(Product).where(Product.id == product_id)
-
     result = db.execute(statement)
 
     db_product = result.scalar_one_or_none()
@@ -105,7 +122,6 @@ def update_product(db: Session, product_id: int, product: ProductUpdate):
 
 def delete_product(db: Session, product_id: int):
     statement = select(Product).where(Product.id == product_id)
-
     result = db.execute(statement)
 
     product = result.scalar_one_or_none()
