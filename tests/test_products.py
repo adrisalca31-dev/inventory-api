@@ -540,3 +540,14 @@ def test_get_products_max_stock(client):
     assert data["total"] == 1
     assert len(data["items"]) == 1
     assert data["items"][0]["name"] == "Laptop"
+
+def test_get_products_invalid_min_stock(client):
+    response = client.get("/products?min_stock=-1")
+
+    assert response.status_code == 422
+
+
+def test_get_products_invalid_max_stock(client):
+    response = client.get("/products?max_stock=-1")
+
+    assert response.status_code == 422
