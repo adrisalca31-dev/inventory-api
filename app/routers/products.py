@@ -49,13 +49,40 @@ def create_product(
     )
 )
 def get_products(
-    skip: int = Query(default=0, ge=0),
-    limit: int = Query(default=10, ge=1, le=100),
-    sort_by: Literal["name", "price", "stock"] = "name",
-    order: Literal["asc", "desc"] = "asc",
-    search: str | None = Query(default=None, min_length=1),
-    min_stock: int | None = Query(default=None, ge=0),
-    max_stock: int | None = Query(default=None, ge=0),
+    skip: int = Query(
+        default=0,
+        ge=0,
+        description="Number of products to skip before returning results."
+    ),
+    limit: int = Query(
+        default=10,
+        ge=1,
+        le=100,
+        description="Maximum number of products to return."
+    ),
+    sort_by: Literal["name", "price", "stock"] = Query(
+        default="name",
+        description="Field used to sort the products."
+    ),
+    order: Literal["asc", "desc"] = Query(
+        default="asc",
+        description="Sort direction: ascending or descending."
+    ),
+    search: str | None = Query(
+        default=None,
+        min_length=1,
+        description="Search products by name."
+    ),
+    min_stock: int | None = Query(
+        default=None,
+        ge=0,
+        description="Return products with stock greater than or equal to this value."
+    ),
+    max_stock: int | None = Query(
+        default=None,
+        ge=0,
+        description="Return products with stock less than or equal to this value."
+    ),
     db: Session = Depends(get_db)
 ):
     return crud_get_products(
