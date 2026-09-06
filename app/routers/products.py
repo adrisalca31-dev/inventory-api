@@ -41,7 +41,12 @@ def create_product(
 
 @router.get(
     "",
-    response_model=ProductListResponse
+    response_model=ProductListResponse,
+    summary="List products",
+    description=(
+        "Retrieve products with optional pagination, sorting, "
+        "search, and stock filters."
+    )
 )
 def get_products(
     skip: int = Query(default=0, ge=0),
