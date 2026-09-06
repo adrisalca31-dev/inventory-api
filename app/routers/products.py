@@ -30,7 +30,13 @@ router = APIRouter(
 @router.post(
     "",
     status_code=status.HTTP_201_CREATED,
-    response_model=ProductResponse
+    response_model=ProductResponse,
+    responses={
+        422: {
+            "model": ErrorResponse,
+            "description": "Invalid product data."
+        }
+    }
 )
 def create_product(
     product: ProductCreate,
@@ -46,7 +52,13 @@ def create_product(
     description=(
         "Retrieve products with optional pagination, sorting, "
         "search, and stock filters."
-    )
+    ),
+    responses={
+        422: {
+            "model": ErrorResponse,
+            "description": "Invalid query parameters."
+        }
+    }
 )
 def get_products(
     skip: int = Query(
