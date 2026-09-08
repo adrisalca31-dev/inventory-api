@@ -26,4 +26,9 @@ def root():
     return {"message": "Inventory API is running"}
 
 
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}
+
+
 app.include_router(products.router)
