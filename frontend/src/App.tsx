@@ -1,6 +1,10 @@
 import "./App.css";
+import ProductTable from "./components/ProductTable";
+import type { Product } from "./types/product";
 
 function App() {
+  const products: Product[] = [];
+
   return (
     <div className="app">
       <aside className="sidebar">
@@ -62,7 +66,7 @@ function App() {
               <div className="stat-icon">▦</div>
               <div>
                 <span>Total products</span>
-                <strong>0</strong>
+                <strong>{products.length}</strong>
               </div>
             </article>
 
@@ -70,7 +74,9 @@ function App() {
               <div className="stat-icon">◷</div>
               <div>
                 <span>Low stock</span>
-                <strong>0</strong>
+                <strong>
+                  {products.filter((product) => product.stock <= 5).length}
+                </strong>
               </div>
             </article>
 
@@ -78,7 +84,16 @@ function App() {
               <div className="stat-icon">$</div>
               <div>
                 <span>Inventory value</span>
-                <strong>$0.00</strong>
+                <strong>
+                  $
+                  {products
+                    .reduce(
+                      (total, product) =>
+                        total + product.price * product.stock,
+                      0
+                    )
+                    .toFixed(2)}
+                </strong>
               </div>
             </article>
           </div>
@@ -93,14 +108,7 @@ function App() {
               <button className="secondary-button">Refresh</button>
             </div>
 
-            <div className="empty-state">
-              <div className="empty-icon">▦</div>
-              <h4>No products yet</h4>
-              <p>
-                Your products will appear here once they are loaded from the
-                Inventory API.
-              </p>
-            </div>
+            <ProductTable products={products} />
           </section>
         </section>
       </main>
