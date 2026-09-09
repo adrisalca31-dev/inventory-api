@@ -8,15 +8,26 @@ import type { Product } from "./types/product";
 function App() {
   const [products, setProducts] = useState<Product[]>([]);
   const [total, setTotal] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function loadProducts() {
+  async function loadProducts() {
+    setIsLoading(true);
+    setError(null);
+
+    try {
       const data = await getProducts();
 
       setProducts(data.items);
       setTotal(data.total);
+    } catch {
+      setError("Unable to load products. Please check the Inventory API.");
+    } finally {
+      setIsLoading(false);
     }
+  }
 
+  useEffect(() => {
     loadProducts();
   }, []);
 
@@ -81,7 +92,7 @@ function App() {
               <div className="stat-icon">▦</div>
               <div>
                 <span>Total products</span>
-                <strong>{total}</strong>
+                <strong>{isLoading ? "—" : total}</strong>
               </div>
             </article>
 
@@ -90,7 +101,9 @@ function App() {
               <div>
                 <span>Low stock</span>
                 <strong>
-                  {products.filter((product) => product.stock <= 5).length}
+                  {isLoading
+                    ? "—"
+                    : products.filter((product) => product.stock <= 5).length}
                 </strong>
               </div>
             </article>
@@ -100,14 +113,15 @@ function App() {
               <div>
                 <span>Inventory value</span>
                 <strong>
-                  $
-                  {products
-                    .reduce(
-                      (total, product) =>
-                        total + product.price * product.stock,
-                      0
-                    )
-                    .toFixed(2)}
+                  {isLoading
+                    ? "—"
+                    : `$${products
+                        .reduce(
+                          (total, product) =>
+                            total + product.price * product.stock,
+                          0
+                        )
+                        .toFixed(2)}`}
                 </strong>
               </div>
             </article>
@@ -120,10 +134,37 @@ function App() {
                 <h3>Product list</h3>
               </div>
 
-              <button className="secondary-button">Refresh</button>
+              <button
+                className="secondary-button"
+                onClick={loadProducts}
+                disabled={isLoading}
+              >
+                {isLoading ? "Loading..." : "Refresh"}
+              </button>
             </div>
 
-            <ProductTable products={products} />
+            {isLoading ? (
+              <div className="empty-state">
+                <div className="loading-spinner"></div>
+                <h4>Loading products...</h4>
+                <p>
+                  We are retrieving the latest inventory information from the
+                  API.
+                </p>
+              </div>
+            ) : error ? (
+              <div className="empty-state error-state">
+                <div className="empty-icon">!</div>
+                <h4>Unable to load products</h4>
+                <p>{error}</p>
+
+                <button className="primary-button" onClick={loadProducts}>
+                  Try again
+                </button>
+              </div>
+            ) : (
+              <ProductTable products={products} />
+            )}
           </section>
         </section>
       </main>
