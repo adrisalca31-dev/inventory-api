@@ -9,10 +9,16 @@ function App() {
   const [products, setProducts] = useState<Product[]>([]);
   const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function loadProducts() {
-    setIsLoading(true);
+  async function loadProducts(isRefresh = false) {
+    if (isRefresh) {
+      setIsRefreshing(true);
+    } else {
+      setIsLoading(true);
+    }
+
     setError(null);
 
     try {
@@ -23,7 +29,11 @@ function App() {
     } catch {
       setError("Unable to load products. Please check the Inventory API.");
     } finally {
-      setIsLoading(false);
+      if (isRefresh) {
+        setIsRefreshing(false);
+      } else {
+        setIsLoading(false);
+      }
     }
   }
 
@@ -136,10 +146,10 @@ function App() {
 
               <button
                 className="secondary-button"
-                onClick={loadProducts}
-                disabled={isLoading}
+                onClick={() => loadProducts(true)}
+                disabled={isLoading || isRefreshing}
               >
-                {isLoading ? "Loading..." : "Refresh"}
+                {isRefreshing ? "Refreshing..." : "Refresh"}
               </button>
             </div>
 
@@ -158,8 +168,12 @@ function App() {
                 <h4>Unable to load products</h4>
                 <p>{error}</p>
 
-                <button className="primary-button" onClick={loadProducts}>
-                  Try again
+                <button
+                  className="primary-button"
+                  onClick={() => loadProducts(true)}
+                  disabled={isRefreshing}
+                >
+                  {isRefreshing ? "Refreshing..." : "Try again"}
                 </button>
               </div>
             ) : (
