@@ -1,9 +1,24 @@
+import { useEffect, useState } from "react";
+
 import "./App.css";
 import ProductTable from "./components/ProductTable";
+import { getProducts } from "./services/api";
 import type { Product } from "./types/product";
 
 function App() {
-  const products: Product[] = [];
+  const [products, setProducts] = useState<Product[]>([]);
+  const [total, setTotal] = useState(0);
+
+  useEffect(() => {
+    async function loadProducts() {
+      const data = await getProducts();
+
+      setProducts(data.items);
+      setTotal(data.total);
+    }
+
+    loadProducts();
+  }, []);
 
   return (
     <div className="app">
@@ -66,7 +81,7 @@ function App() {
               <div className="stat-icon">▦</div>
               <div>
                 <span>Total products</span>
-                <strong>{products.length}</strong>
+                <strong>{total}</strong>
               </div>
             </article>
 
