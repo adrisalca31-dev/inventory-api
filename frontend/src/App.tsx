@@ -13,6 +13,8 @@ function App() {
   const limit = 10;
   const totalPages = Math.ceil(total / limit);
 
+  const [searchTerm, setSearchTerm] = useState("");
+
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -45,6 +47,10 @@ function App() {
   useEffect(() => {
     loadProducts();
   }, [page]);
+
+  const filteredProducts = products.filter((product) =>
+    product.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="app">
@@ -159,13 +165,22 @@ function App() {
                 <h3>Product list</h3>
               </div>
 
-              <button
-                className="secondary-button"
-                onClick={() => loadProducts(true)}
-                disabled={isLoading || isRefreshing}
-              >
-                {isRefreshing ? "Refreshing..." : "Refresh"}
-              </button>
+              <div className="product-actions">
+                <input
+                  type="text"
+                  placeholder="Search products..."
+                  value={searchTerm}
+                  onChange={(event) => setSearchTerm(event.target.value)}
+                />
+
+                <button
+                  className="secondary-button"
+                  onClick={() => loadProducts(true)}
+                  disabled={isLoading || isRefreshing}
+                >
+                  {isRefreshing ? "Refreshing..." : "Refresh"}
+                </button>
+              </div>
             </div>
 
             {isLoading ? (
@@ -197,7 +212,7 @@ function App() {
               </div>
             ) : (
               <>
-                <ProductTable products={products} />
+                <ProductTable products={filteredProducts} />
 
                 <div className="pagination">
                   <button
