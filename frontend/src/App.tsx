@@ -52,6 +52,9 @@ function App() {
     product.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const firstProduct = total === 0 ? 0 : (page - 1) * limit + 1;
+  const lastProduct = Math.min(page * limit, total);
+
   return (
     <div className="app">
       <aside className="sidebar">
@@ -215,6 +218,10 @@ function App() {
                 <ProductTable products={filteredProducts} />
 
                 <div className="pagination">
+                  <span>
+                    Showing {firstProduct}–{lastProduct} of {total} products
+                  </span>
+
                   <button
                     className="secondary-button"
                     onClick={() =>
