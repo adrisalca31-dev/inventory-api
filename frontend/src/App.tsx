@@ -8,6 +8,11 @@ import type { Product } from "./types/product";
 function App() {
   const [products, setProducts] = useState<Product[]>([]);
   const [total, setTotal] = useState(0);
+
+  const [page, setPage] = useState(1);
+  const limit = 10;
+  const totalPages = Math.ceil(total / limit);
+
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -22,7 +27,7 @@ function App() {
     setError(null);
 
     try {
-      const data = await getProducts();
+      const data = await getProducts(page, limit);
 
       setProducts(data.items);
       setTotal(data.total);
@@ -39,13 +44,14 @@ function App() {
 
   useEffect(() => {
     loadProducts();
-  }, []);
+  }, [page]);
 
   return (
     <div className="app">
       <aside className="sidebar">
         <div className="brand">
           <div className="brand-icon">I</div>
+
           <div>
             <h1>Inventory</h1>
             <span>Management</span>
@@ -87,7 +93,9 @@ function App() {
           <div className="welcome">
             <div>
               <p className="section-label">Overview</p>
+
               <h3>Product inventory</h3>
+
               <p>
                 Manage your products, stock levels and inventory information
                 from one place.
@@ -100,16 +108,20 @@ function App() {
           <div className="stats-grid">
             <article className="stat-card">
               <div className="stat-icon">▦</div>
+
               <div>
                 <span>Total products</span>
+
                 <strong>{isLoading ? "—" : total}</strong>
               </div>
             </article>
 
             <article className="stat-card">
               <div className="stat-icon">◷</div>
+
               <div>
                 <span>Low stock</span>
+
                 <strong>
                   {isLoading
                     ? "—"
@@ -120,8 +132,10 @@ function App() {
 
             <article className="stat-card">
               <div className="stat-icon">$</div>
+
               <div>
                 <span>Inventory value</span>
+
                 <strong>
                   {isLoading
                     ? "—"
@@ -141,6 +155,7 @@ function App() {
             <div className="card-header">
               <div>
                 <p className="section-label">Products</p>
+
                 <h3>Product list</h3>
               </div>
 
@@ -156,7 +171,9 @@ function App() {
             {isLoading ? (
               <div className="empty-state">
                 <div className="loading-spinner"></div>
+
                 <h4>Loading products...</h4>
+
                 <p>
                   We are retrieving the latest inventory information from the
                   API.
@@ -165,7 +182,9 @@ function App() {
             ) : error ? (
               <div className="empty-state error-state">
                 <div className="empty-icon">!</div>
+
                 <h4>Unable to load products</h4>
+
                 <p>{error}</p>
 
                 <button
@@ -177,7 +196,35 @@ function App() {
                 </button>
               </div>
             ) : (
-              <ProductTable products={products} />
+              <>
+                <ProductTable products={products} />
+
+                <div className="pagination">
+                  <button
+                    className="secondary-button"
+                    onClick={() =>
+                      setPage((currentPage) => currentPage - 1)
+                    }
+                    disabled={page === 1}
+                  >
+                    Previous
+                  </button>
+
+                  <span>
+                    Page {page} of {totalPages}
+                  </span>
+
+                  <button
+                    className="secondary-button"
+                    onClick={() =>
+                      setPage((currentPage) => currentPage + 1)
+                    }
+                    disabled={page === totalPages}
+                  >
+                    Next
+                  </button>
+                </div>
+              </>
             )}
           </section>
         </section>
