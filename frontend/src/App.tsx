@@ -18,7 +18,7 @@ function App() {
   const [error, setError] = useState<string | null>(null);
 
   async function loadProducts(isRefresh = false) {
-    if (isRefresh) {
+    if (isRefresh || products.length > 0) {
       setIsRefreshing(true);
     } else {
       setIsLoading(true);
@@ -34,7 +34,7 @@ function App() {
     } catch {
       setError("Unable to load products. Please check the Inventory API.");
     } finally {
-      if (isRefresh) {
+      if (isRefresh || products.length > 0) {
         setIsRefreshing(false);
       } else {
         setIsLoading(false);
