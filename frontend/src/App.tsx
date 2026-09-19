@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 
 import "./App.css";
 import ProductTable from "./components/ProductTable";
-import { getProducts } from "./services/api";
-import type { Product } from "./types/product";
+import { createProduct, getProducts } from "./services/api";
+import type { Product, ProductInput } from "./types/product";
 
 function App() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -18,6 +18,15 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+
+  const [formData, setFormData] = useState<ProductInput>({
+    name: "",
+    price: 0,
+    stock: 0,
+  });
 
   async function loadProducts(isRefresh = false) {
     if (isRefresh || products.length > 0) {
@@ -52,8 +61,50 @@ function App() {
     product.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const searchResultLabel = searchTerm.trim()
+    ? `${filteredProducts.length} ${
+        filteredProducts.length === 1 ? "product" : "products"
+      } found`
+    : `${total} products`;
+
   const firstProduct = total === 0 ? 0 : (page - 1) * limit + 1;
   const lastProduct = Math.min(page * limit, total);
+
+  function handleFormChange(
+    event: React.ChangeEvent<HTMLInputElement>
+  ) {
+    const { name, value } = event.target;
+
+    setFormData((currentData) => ({
+      ...currentData,
+      [name]: name === "name" ? value : Number(value),
+    }));
+  }
+
+  async function handleCreateProduct(event: React.FormEvent) {
+    event.preventDefault();
+
+    setIsCreating(true);
+    setError(null);
+
+    try {
+      await createProduct(formData);
+
+      setFormData({
+        name: "",
+        price: 0,
+        stock: 0,
+      });
+
+      setIsFormOpen(false);
+
+      await loadProducts(true);
+    } catch {
+      setError("Unable to create product. Please try again.");
+    } finally {
+      setIsCreating(false);
+    }
+  }
 
   return (
     <div className="app">
@@ -111,8 +162,83 @@ function App() {
               </p>
             </div>
 
-            <button className="primary-button">+ Add product</button>
+            <button
+              className="primary-button"
+              onClick={() => setIsFormOpen(true)}
+            >
+              + Add product
+            </button>
           </div>
+
+          {isFormOpen && (
+            <section className="form-card">
+              <div className="card-header">
+                <div>
+                  <p className="section-label">Products</p>
+                  <h3>Add product</h3>
+                </div>
+
+                <button
+                  className="secondary-button"
+                  onClick={() => setIsFormOpen(false)}
+                  disabled={isCreating}
+                >
+                  Cancel
+                </button>
+              </div>
+
+              <form onSubmit={handleCreateProduct} className="product-form">
+                <label>
+                  Product name
+
+                  <input
+                    name="name"
+                    type="text"
+                    value={formData.name}
+                    onChange={handleFormChange}
+                    placeholder="Product name"
+                    required
+                  />
+                </label>
+
+                <label>
+                  Price
+
+                  <input
+                    name="price"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={formData.price}
+                    onChange={handleFormChange}
+                    required
+                  />
+                </label>
+
+                <label>
+                  Stock
+
+                  <input
+                    name="stock"
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={formData.stock}
+                    onChange={handleFormChange}
+                    required
+                  />
+                </label>
+
+                <button
+                  className="primary-button"
+                  type="submit"
+                  disabled={isCreating}
+                >
+                  {isCreating ? "Creating..." : "Create product"}
+                </button>
+              </form>
+            </section>
+          )}
 
           <div className="stats-grid">
             <article className="stat-card">
@@ -120,7 +246,6 @@ function App() {
 
               <div>
                 <span>Total products</span>
-
                 <strong>{isLoading ? "—" : total}</strong>
               </div>
             </article>
@@ -164,7 +289,6 @@ function App() {
             <div className="card-header">
               <div>
                 <p className="section-label">Products</p>
-
                 <h3>Product list</h3>
               </div>
 
@@ -175,6 +299,10 @@ function App() {
                   value={searchTerm}
                   onChange={(event) => setSearchTerm(event.target.value)}
                 />
+
+                <span className="search-result-count">
+                  {searchResultLabel}
+                </span>
 
                 <button
                   className="secondary-button"
