@@ -22,6 +22,7 @@ function App() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const [formData, setFormData] = useState<ProductInput>({
     name: "",
@@ -77,6 +78,7 @@ function App() {
     const { name, value } = event.target;
 
     setFormError(null);
+    setSuccessMessage(null);
 
     setFormData((currentData) => ({
       ...currentData,
@@ -112,6 +114,7 @@ function App() {
 
     setIsCreating(true);
     setFormError(null);
+    setSuccessMessage(null);
     setError(null);
 
     try {
@@ -128,6 +131,7 @@ function App() {
       });
 
       setIsFormOpen(false);
+      setSuccessMessage("Product created successfully.");
 
       await loadProducts(true);
     } catch {
@@ -197,12 +201,19 @@ function App() {
               className="primary-button"
               onClick={() => {
                 setFormError(null);
+                setSuccessMessage(null);
                 setIsFormOpen(true);
               }}
             >
               + Add product
             </button>
           </div>
+
+          {successMessage && (
+            <div className="success-message">
+              {successMessage}
+            </div>
+          )}
 
           {isFormOpen && (
             <section className="form-card">
