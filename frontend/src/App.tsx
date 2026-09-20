@@ -21,6 +21,7 @@ function App() {
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState<ProductInput>({
     name: "",
@@ -75,20 +76,50 @@ function App() {
   ) {
     const { name, value } = event.target;
 
+    setFormError(null);
+
     setFormData((currentData) => ({
       ...currentData,
       [name]: name === "name" ? value : Number(value),
     }));
   }
 
+  function validateProductForm(): string | null {
+    if (!formData.name.trim()) {
+      return "Product name is required.";
+    }
+
+    if (formData.price < 0) {
+      return "Price cannot be negative.";
+    }
+
+    if (formData.stock < 0) {
+      return "Stock cannot be negative.";
+    }
+
+    return null;
+  }
+
   async function handleCreateProduct(event: React.FormEvent) {
     event.preventDefault();
 
+    const validationError = validateProductForm();
+
+    if (validationError) {
+      setFormError(validationError);
+      return;
+    }
+
     setIsCreating(true);
+    setFormError(null);
     setError(null);
 
     try {
-      await createProduct(formData);
+      await createProduct({
+        name: formData.name.trim(),
+        price: formData.price,
+        stock: formData.stock,
+      });
 
       setFormData({
         name: "",
@@ -100,7 +131,7 @@ function App() {
 
       await loadProducts(true);
     } catch {
-      setError("Unable to create product. Please try again.");
+      setFormError("Unable to create product. Please try again.");
     } finally {
       setIsCreating(false);
     }
@@ -164,7 +195,10 @@ function App() {
 
             <button
               className="primary-button"
-              onClick={() => setIsFormOpen(true)}
+              onClick={() => {
+                setFormError(null);
+                setIsFormOpen(true);
+              }}
             >
               + Add product
             </button>
@@ -180,7 +214,10 @@ function App() {
 
                 <button
                   className="secondary-button"
-                  onClick={() => setIsFormOpen(false)}
+                  onClick={() => {
+                    setFormError(null);
+                    setIsFormOpen(false);
+                  }}
                   disabled={isCreating}
                 >
                   Cancel
@@ -197,7 +234,6 @@ function App() {
                     value={formData.name}
                     onChange={handleFormChange}
                     placeholder="Product name"
-                    required
                   />
                 </label>
 
@@ -211,7 +247,6 @@ function App() {
                     step="0.01"
                     value={formData.price}
                     onChange={handleFormChange}
-                    required
                   />
                 </label>
 
@@ -225,9 +260,12 @@ function App() {
                     step="1"
                     value={formData.stock}
                     onChange={handleFormChange}
-                    required
                   />
                 </label>
+
+                {formError && (
+                  <p className="form-error">{formError}</p>
+                )}
 
                 <button
                   className="primary-button"
