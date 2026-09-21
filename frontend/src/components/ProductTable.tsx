@@ -4,12 +4,35 @@ interface ProductTableProps {
   products: Product[];
 }
 
+function getStockStatus(stock: number) {
+  if (stock === 0) {
+    return {
+      label: "Out of stock",
+      className: "stock-badge out",
+    };
+  }
+
+  if (stock <= 5) {
+    return {
+      label: "Low stock",
+      className: "stock-badge low",
+    };
+  }
+
+  return {
+    label: "In stock",
+    className: "stock-badge available",
+  };
+}
+
 function ProductTable({ products }: ProductTableProps) {
   if (products.length === 0) {
     return (
       <div className="empty-state">
         <div className="empty-icon">▦</div>
+
         <h4>No products yet</h4>
+
         <p>
           Your products will appear here once they are loaded from the
           Inventory API.
@@ -31,44 +54,36 @@ function ProductTable({ products }: ProductTableProps) {
         </thead>
 
         <tbody>
-          {products.map((product) => (
-            <tr key={product.id}>
-              <td>
-                <div className="product-name">
-                  <span className="product-avatar">
-                    {product.name.charAt(0).toUpperCase()}
-                  </span>
+          {products.map((product) => {
+            const stockStatus = getStockStatus(product.stock);
 
-                  <div>
-                    <strong>{product.name}</strong>
-                    <small>Product #{product.id}</small>
+            return (
+              <tr key={product.id}>
+                <td>
+                  <div className="product-name">
+                    <span className="product-avatar">
+                      {product.name.charAt(0).toUpperCase()}
+                    </span>
+
+                    <div>
+                      <strong>{product.name}</strong>
+                      <small>Product #{product.id}</small>
+                    </div>
                   </div>
-                </div>
-              </td>
+                </td>
 
-              <td>${product.price.toFixed(2)}</td>
+                <td>${product.price.toFixed(2)}</td>
 
-              <td>{product.stock}</td>
+                <td>{product.stock}</td>
 
-              <td>
-                <span
-                  className={
-                    product.stock === 0
-                      ? "stock-badge out"
-                      : product.stock <= 5
-                        ? "stock-badge low"
-                        : "stock-badge available"
-                  }
-                >
-                  {product.stock === 0
-                    ? "Out of stock"
-                    : product.stock <= 5
-                      ? "Low stock"
-                      : "In stock"}
-                </span>
-              </td>
-            </tr>
-          ))}
+                <td>
+                  <span className={stockStatus.className}>
+                    {stockStatus.label}
+                  </span>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
