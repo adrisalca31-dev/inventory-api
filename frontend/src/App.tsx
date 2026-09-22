@@ -59,8 +59,10 @@ function App() {
     loadProducts();
   }, [page]);
 
+  const normalizedSearchTerm = searchTerm.trim().toLowerCase();
+
   const filteredProducts = products.filter((product) =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase())
+    product.name.toLowerCase().includes(normalizedSearchTerm)
   );
 
   const searchResultLabel = searchTerm.trim()
@@ -392,7 +394,20 @@ function App() {
               </div>
             ) : (
               <>
-                <ProductTable products={filteredProducts} />
+                {searchTerm.trim() && filteredProducts.length === 0 ? (
+                  <div className="empty-state">
+                    <div className="empty-icon">⌕</div>
+
+                    <h4>No products found</h4>
+
+                    <p>
+                      No products match your search. Try a different product
+                      name.
+                    </p>
+                  </div>
+                ) : (
+                  <ProductTable products={filteredProducts} />
+                )}
 
                 <div className="pagination">
                   <span>
