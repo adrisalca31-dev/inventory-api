@@ -15,7 +15,9 @@ function ProductTable({
     return (
       <div className="empty-state">
         <div className="empty-icon">▦</div>
+
         <h4>No products yet</h4>
+
         <p>
           Your products will appear here once they are loaded from the
           Inventory API.
@@ -80,6 +82,8 @@ function ProductTable({
                   <button
                     className="secondary-button"
                     type="button"
+                    title={`Edit ${product.name}`}
+                    aria-label={`Edit ${product.name}`}
                     onClick={() => onEdit?.(product)}
                   >
                     Edit
@@ -88,6 +92,8 @@ function ProductTable({
                   <button
                     className="secondary-button"
                     type="button"
+                    title={`Delete ${product.name}`}
+                    aria-label={`Delete ${product.name}`}
                     onClick={() => onDelete?.(product)}
                   >
                     Delete
