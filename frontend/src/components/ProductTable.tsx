@@ -2,37 +2,20 @@ import type { Product } from "../types/product";
 
 interface ProductTableProps {
   products: Product[];
+  onEdit?: (product: Product) => void;
+  onDelete?: (product: Product) => void;
 }
 
-function getStockStatus(stock: number) {
-  if (stock === 0) {
-    return {
-      label: "Out of stock",
-      className: "stock-badge out",
-    };
-  }
-
-  if (stock <= 5) {
-    return {
-      label: "Low stock",
-      className: "stock-badge low",
-    };
-  }
-
-  return {
-    label: "In stock",
-    className: "stock-badge available",
-  };
-}
-
-function ProductTable({ products }: ProductTableProps) {
+function ProductTable({
+  products,
+  onEdit,
+  onDelete,
+}: ProductTableProps) {
   if (products.length === 0) {
     return (
       <div className="empty-state">
         <div className="empty-icon">▦</div>
-
         <h4>No products yet</h4>
-
         <p>
           Your products will appear here once they are loaded from the
           Inventory API.
@@ -50,40 +33,69 @@ function ProductTable({ products }: ProductTableProps) {
             <th>Price</th>
             <th>Stock</th>
             <th>Status</th>
+            <th>Actions</th>
           </tr>
         </thead>
 
         <tbody>
-          {products.map((product) => {
-            const stockStatus = getStockStatus(product.stock);
-
-            return (
-              <tr key={product.id}>
-                <td>
-                  <div className="product-name">
-                    <span className="product-avatar">
-                      {product.name.charAt(0).toUpperCase()}
-                    </span>
-
-                    <div>
-                      <strong>{product.name}</strong>
-                      <small>Product #{product.id}</small>
-                    </div>
-                  </div>
-                </td>
-
-                <td>${product.price.toFixed(2)}</td>
-
-                <td>{product.stock}</td>
-
-                <td>
-                  <span className={stockStatus.className}>
-                    {stockStatus.label}
+          {products.map((product) => (
+            <tr key={product.id}>
+              <td>
+                <div className="product-name">
+                  <span className="product-avatar">
+                    {product.name.charAt(0).toUpperCase()}
                   </span>
-                </td>
-              </tr>
-            );
-          })}
+
+                  <div>
+                    <strong>{product.name}</strong>
+                    <small>Product #{product.id}</small>
+                  </div>
+                </div>
+              </td>
+
+              <td>${product.price.toFixed(2)}</td>
+
+              <td>{product.stock}</td>
+
+              <td>
+                <span
+                  className={
+                    product.stock === 0
+                      ? "stock-badge out"
+                      : product.stock <= 5
+                        ? "stock-badge low"
+                        : "stock-badge available"
+                  }
+                >
+                  {product.stock === 0
+                    ? "Out of stock"
+                    : product.stock <= 5
+                      ? "Low stock"
+                      : "In stock"}
+                </span>
+              </td>
+
+              <td>
+                <div className="product-actions">
+                  <button
+                    className="secondary-button"
+                    type="button"
+                    onClick={() => onEdit?.(product)}
+                  >
+                    Edit
+                  </button>
+
+                  <button
+                    className="secondary-button"
+                    type="button"
+                    onClick={() => onDelete?.(product)}
+                  >
+                    Delete
+                  </button>
+                </div>
+              </td>
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>
