@@ -24,6 +24,8 @@ function App() {
   const [formError, setFormError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+
   const [formData, setFormData] = useState<ProductInput>({
     name: "",
     price: 0,
@@ -104,6 +106,44 @@ function App() {
     return null;
   }
 
+  function openCreateForm() {
+    setEditingProduct(null);
+
+    setFormData({
+      name: "",
+      price: 0,
+      stock: 0,
+    });
+
+    setFormError(null);
+    setSuccessMessage(null);
+    setIsFormOpen(true);
+  }
+
+  function openEditForm(product: Product) {
+    setEditingProduct(product);
+
+    setFormData({
+      name: product.name,
+      price: product.price,
+      stock: product.stock,
+    });
+
+    setFormError(null);
+    setSuccessMessage(null);
+    setIsFormOpen(true);
+  }
+
+  function closeForm() {
+    if (isCreating) {
+      return;
+    }
+
+    setIsFormOpen(false);
+    setEditingProduct(null);
+    setFormError(null);
+  }
+
   async function handleCreateProduct(event: React.FormEvent) {
     event.preventDefault();
 
@@ -141,6 +181,13 @@ function App() {
     } finally {
       setIsCreating(false);
     }
+  }
+
+  function handleDeleteProduct(product: Product) {
+    setSuccessMessage(null);
+    setFormError(
+      `Delete action for "${product.name}" is not connected yet.`
+    );
   }
 
   return (
@@ -201,11 +248,7 @@ function App() {
 
             <button
               className="primary-button"
-              onClick={() => {
-                setFormError(null);
-                setSuccessMessage(null);
-                setIsFormOpen(true);
-              }}
+              onClick={openCreateForm}
             >
               + Add product
             </button>
@@ -222,22 +265,25 @@ function App() {
               <div className="card-header">
                 <div>
                   <p className="section-label">Products</p>
-                  <h3>Add product</h3>
+
+                  <h3>
+                    {editingProduct ? "Edit product" : "Add product"}
+                  </h3>
                 </div>
 
                 <button
                   className="secondary-button"
-                  onClick={() => {
-                    setFormError(null);
-                    setIsFormOpen(false);
-                  }}
+                  onClick={closeForm}
                   disabled={isCreating}
                 >
                   Cancel
                 </button>
               </div>
 
-              <form onSubmit={handleCreateProduct} className="product-form">
+              <form
+                onSubmit={handleCreateProduct}
+                className="product-form"
+              >
                 <label>
                   Product name
 
@@ -285,7 +331,11 @@ function App() {
                   type="submit"
                   disabled={isCreating}
                 >
-                  {isCreating ? "Creating..." : "Create product"}
+                  {isCreating
+                    ? "Saving..."
+                    : editingProduct
+                      ? "Save changes"
+                      : "Create product"}
                 </button>
               </form>
             </section>
@@ -310,7 +360,9 @@ function App() {
                 <strong>
                   {isLoading
                     ? "—"
-                    : products.filter((product) => product.stock <= 5).length}
+                    : products.filter(
+                        (product) => product.stock <= 5
+                      ).length}
                 </strong>
               </div>
             </article>
@@ -348,7 +400,9 @@ function App() {
                   type="text"
                   placeholder="Search products..."
                   value={searchTerm}
-                  onChange={(event) => setSearchTerm(event.target.value)}
+                  onChange={(event) =>
+                    setSearchTerm(event.target.value)
+                  }
                 />
 
                 <span className="search-result-count">
@@ -372,8 +426,8 @@ function App() {
                 <h4>Loading products...</h4>
 
                 <p>
-                  We are retrieving the latest inventory information from the
-                  API.
+                  We are retrieving the latest inventory information
+                  from the API.
                 </p>
               </div>
             ) : error ? (
@@ -394,30 +448,38 @@ function App() {
               </div>
             ) : (
               <>
-                {searchTerm.trim() && filteredProducts.length === 0 ? (
+                {searchTerm.trim() &&
+                filteredProducts.length === 0 ? (
                   <div className="empty-state">
                     <div className="empty-icon">⌕</div>
 
                     <h4>No products found</h4>
 
                     <p>
-                      No products match your search. Try a different product
-                      name.
+                      No products match your search. Try a different
+                      product name.
                     </p>
                   </div>
                 ) : (
-                  <ProductTable products={filteredProducts} />
+                  <ProductTable
+                    products={filteredProducts}
+                    onEdit={openEditForm}
+                    onDelete={handleDeleteProduct}
+                  />
                 )}
 
                 <div className="pagination">
                   <span>
-                    Showing {firstProduct}–{lastProduct} of {total} products
+                    Showing {firstProduct}–{lastProduct} of {total}{" "}
+                    products
                   </span>
 
                   <button
                     className="secondary-button"
                     onClick={() =>
-                      setPage((currentPage) => currentPage - 1)
+                      setPage(
+                        (currentPage) => currentPage - 1
+                      )
                     }
                     disabled={page === 1}
                   >
@@ -431,7 +493,9 @@ function App() {
                   <button
                     className="secondary-button"
                     onClick={() =>
-                      setPage((currentPage) => currentPage + 1)
+                      setPage(
+                        (currentPage) => currentPage + 1
+                      )
                     }
                     disabled={page === totalPages}
                   >
