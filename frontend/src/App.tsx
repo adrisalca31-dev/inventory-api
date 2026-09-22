@@ -2,7 +2,11 @@ import { useEffect, useState } from "react";
 
 import "./App.css";
 import ProductTable from "./components/ProductTable";
-import { createProduct, getProducts } from "./services/api";
+import {
+  createProduct,
+  getProducts,
+  updateProduct,
+} from "./services/api";
 import type { Product, ProductInput } from "./types/product";
 
 function App() {
@@ -24,7 +28,9 @@ function App() {
   const [formError, setFormError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(
+    null
+  );
 
   const [formData, setFormData] = useState<ProductInput>({
     name: "",
@@ -144,7 +150,7 @@ function App() {
     setFormError(null);
   }
 
-  async function handleCreateProduct(event: React.FormEvent) {
+  async function handleSaveProduct(event: React.FormEvent) {
     event.preventDefault();
 
     const validationError = validateProductForm();
@@ -160,11 +166,23 @@ function App() {
     setError(null);
 
     try {
-      await createProduct({
-        name: formData.name.trim(),
-        price: formData.price,
-        stock: formData.stock,
-      });
+      if (editingProduct) {
+        await updateProduct(editingProduct.id, {
+          name: formData.name.trim(),
+          price: formData.price,
+          stock: formData.stock,
+        });
+
+        setSuccessMessage("Product updated successfully.");
+      } else {
+        await createProduct({
+          name: formData.name.trim(),
+          price: formData.price,
+          stock: formData.stock,
+        });
+
+        setSuccessMessage("Product created successfully.");
+      }
 
       setFormData({
         name: "",
@@ -172,12 +190,16 @@ function App() {
         stock: 0,
       });
 
+      setEditingProduct(null);
       setIsFormOpen(false);
-      setSuccessMessage("Product created successfully.");
 
       await loadProducts(true);
     } catch {
-      setFormError("Unable to create product. Please try again.");
+      setFormError(
+        editingProduct
+          ? "Unable to update product. Please try again."
+          : "Unable to create product. Please try again."
+      );
     } finally {
       setIsCreating(false);
     }
@@ -185,6 +207,7 @@ function App() {
 
   function handleDeleteProduct(product: Product) {
     setSuccessMessage(null);
+
     setFormError(
       `Delete action for "${product.name}" is not connected yet.`
     );
@@ -281,7 +304,7 @@ function App() {
               </div>
 
               <form
-                onSubmit={handleCreateProduct}
+                onSubmit={handleSaveProduct}
                 className="product-form"
               >
                 <label>
