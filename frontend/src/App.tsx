@@ -4,6 +4,7 @@ import "./App.css";
 import ProductTable from "./components/ProductTable";
 import {
   createProduct,
+  deleteProduct,
   getProducts,
   updateProduct,
 } from "./services/api";
@@ -205,12 +206,35 @@ function App() {
     }
   }
 
-  function handleDeleteProduct(product: Product) {
-    setSuccessMessage(null);
-
-    setFormError(
-      `Delete action for "${product.name}" is not connected yet.`
+  async function handleDeleteProduct(product: Product) {
+    const confirmed = window.confirm(
+      `Are you sure you want to delete "${product.name}"?`
     );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setError(null);
+    setFormError(null);
+    setSuccessMessage(null);
+    setIsRefreshing(true);
+
+    try {
+      await deleteProduct(product.id);
+
+      setSuccessMessage("Product deleted successfully.");
+
+      if (products.length === 1 && page > 1) {
+        setPage((currentPage) => currentPage - 1);
+      } else {
+        await loadProducts(true);
+      }
+    } catch {
+      setError("Unable to delete product. Please try again.");
+    } finally {
+      setIsRefreshing(false);
+    }
   }
 
   return (
