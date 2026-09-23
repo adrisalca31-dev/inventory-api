@@ -344,7 +344,7 @@ def test_update_product(client):
             "price": 50.00,
             "stock": 15
         }
-    )
+    )  
 
     product_id = create_response.json()["id"]
 
@@ -366,6 +366,17 @@ def test_update_product(client):
     assert data["price"] == 85.00
     assert data["stock"] == 10
 
+def test_update_product_not_found(client):
+    response = client.put(
+        "/products/9999",
+        json={
+            "name": "Updated Product",
+            "price": 30.0,
+            "stock": 10,
+        },
+    )
+
+    assert response.status_code == 404
 
 def test_update_product_not_found(client):
     response = client.put(
