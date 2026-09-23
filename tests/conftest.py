@@ -12,25 +12,25 @@ from app.models import Base
 
 TEST_DATABASE_URL = "sqlite://"
 
-engine = create_engine(
+test_engine = create_engine(
     TEST_DATABASE_URL,
     connect_args={"check_same_thread": False},
     poolclass=StaticPool,
 )
 
-TestingSessionLocal = sessionmaker(
+TestSessionLocal = sessionmaker(
     autocommit=False,
     autoflush=False,
-    bind=engine,
+    bind=test_engine,
 )
 
 
 @pytest.fixture
 def client():
-    Base.metadata.create_all(bind=engine)
+    Base.metadata.create_all(bind=test_engine)
 
     def override_get_db():
-        db = TestingSessionLocal()
+        db = TestSessionLocal()
 
         try:
             yield db
@@ -43,4 +43,4 @@ def client():
         yield test_client
 
     app.dependency_overrides.clear()
-    Base.metadata.drop_all(bind=engine)
+    Base.metadata.drop_all(bind=test_engine)
