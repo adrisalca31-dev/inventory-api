@@ -602,3 +602,15 @@ def test_get_products_combined_filters(client):
 
     assert data["items"][1]["name"] == "Laptop"
     assert data["items"][1]["price"] == 1200
+
+def test_create_product_with_negative_price(client):
+    response = client.post(
+        "/products",
+        json={
+            "name": "Invalid Product",
+            "price": -10.0,
+            "stock": 5,
+        },
+    )
+
+    assert response.status_code == 422
