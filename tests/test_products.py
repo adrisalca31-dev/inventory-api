@@ -426,6 +426,10 @@ def test_delete_product_not_found(client):
         "detail": "Product not found"
     }
 
+def test_delete_product_not_found(client):
+    response = client.delete("/products/9999")
+
+    assert response.status_code == 404
 
 def test_create_product_invalid_price(client):
     response = client.post(
