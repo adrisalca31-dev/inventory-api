@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 import "./App.css";
 import ProductForm from "./components/ProductForm";
+import ProductStats from "./components/ProductStats";
 import ProductTable from "./components/ProductTable";
 import {
   createProduct,
@@ -81,6 +82,15 @@ function App() {
 
   const firstProduct = total === 0 ? 0 : (page - 1) * limit + 1;
   const lastProduct = Math.min(page * limit, total);
+
+  const lowStockCount = products.filter(
+    (product) => product.stock <= 5
+  ).length;
+
+  const inventoryValue = products.reduce(
+    (total, product) => total + product.price * product.stock,
+    0
+  );
 
   function handleFormChange(
     event: React.ChangeEvent<HTMLInputElement>
@@ -316,52 +326,12 @@ function App() {
             />
           )}
 
-          <div className="stats-grid">
-            <article className="stat-card">
-              <div className="stat-icon">▦</div>
-
-              <div>
-                <span>Total products</span>
-                <strong>{isLoading ? "—" : total}</strong>
-              </div>
-            </article>
-
-            <article className="stat-card">
-              <div className="stat-icon">◷</div>
-
-              <div>
-                <span>Low stock</span>
-
-                <strong>
-                  {isLoading
-                    ? "—"
-                    : products.filter(
-                        (product) => product.stock <= 5
-                      ).length}
-                </strong>
-              </div>
-            </article>
-
-            <article className="stat-card">
-              <div className="stat-icon">$</div>
-
-              <div>
-                <span>Inventory value</span>
-
-                <strong>
-                  {isLoading
-                    ? "—"
-                    : `$${products
-                        .reduce(
-                          (total, product) =>
-                            total + product.price * product.stock,
-                          0
-                        )
-                        .toFixed(2)}`}
-                </strong>
-              </div>
-            </article>
-          </div>
+          <ProductStats
+            total={total}
+            lowStock={lowStockCount}
+            inventoryValue={inventoryValue}
+            isLoading={isLoading}
+          />
 
           <section className="products-card">
             <div className="card-header">
