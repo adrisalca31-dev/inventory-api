@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import "./App.css";
+import ProductForm from "./components/ProductForm";
 import ProductTable from "./components/ProductTable";
 import {
   createProduct,
@@ -25,13 +26,11 @@ function App() {
   const [error, setError] = useState<string | null>(null);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [isCreating, setIsCreating] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const [editingProduct, setEditingProduct] = useState<Product | null>(
-    null
-  );
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
   const [formData, setFormData] = useState<ProductInput>({
     name: "",
@@ -142,7 +141,7 @@ function App() {
   }
 
   function closeForm() {
-    if (isCreating) {
+    if (isSaving) {
       return;
     }
 
@@ -161,7 +160,7 @@ function App() {
       return;
     }
 
-    setIsCreating(true);
+    setIsSaving(true);
     setFormError(null);
     setSuccessMessage(null);
     setError(null);
@@ -202,7 +201,7 @@ function App() {
           : "Unable to create product. Please try again."
       );
     } finally {
-      setIsCreating(false);
+      setIsSaving(false);
     }
   }
 
@@ -302,90 +301,19 @@ function App() {
           </div>
 
           {successMessage && (
-            <div className="success-message">
-              {successMessage}
-            </div>
+            <div className="success-message">{successMessage}</div>
           )}
 
           {isFormOpen && (
-            <section className="form-card">
-              <div className="card-header">
-                <div>
-                  <p className="section-label">Products</p>
-
-                  <h3>
-                    {editingProduct ? "Edit product" : "Add product"}
-                  </h3>
-                </div>
-
-                <button
-                  className="secondary-button"
-                  onClick={closeForm}
-                  disabled={isCreating}
-                >
-                  Cancel
-                </button>
-              </div>
-
-              <form
-                onSubmit={handleSaveProduct}
-                className="product-form"
-              >
-                <label>
-                  Product name
-
-                  <input
-                    name="name"
-                    type="text"
-                    value={formData.name}
-                    onChange={handleFormChange}
-                    placeholder="Product name"
-                  />
-                </label>
-
-                <label>
-                  Price
-
-                  <input
-                    name="price"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={formData.price}
-                    onChange={handleFormChange}
-                  />
-                </label>
-
-                <label>
-                  Stock
-
-                  <input
-                    name="stock"
-                    type="number"
-                    min="0"
-                    step="1"
-                    value={formData.stock}
-                    onChange={handleFormChange}
-                  />
-                </label>
-
-                {formError && (
-                  <p className="form-error">{formError}</p>
-                )}
-
-                <button
-                  className="primary-button"
-                  type="submit"
-                  disabled={isCreating}
-                >
-                  {isCreating
-                    ? "Saving..."
-                    : editingProduct
-                      ? "Save changes"
-                      : "Create product"}
-                </button>
-              </form>
-            </section>
+            <ProductForm
+              editingProduct={editingProduct}
+              formData={formData}
+              isSaving={isSaving}
+              formError={formError}
+              onChange={handleFormChange}
+              onSubmit={handleSaveProduct}
+              onCancel={closeForm}
+            />
           )}
 
           <div className="stats-grid">
