@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import "./App.css";
 import ProductForm from "./components/ProductForm";
@@ -7,66 +7,44 @@ import ProductTable from "./components/ProductTable";
 import {
   createProduct,
   deleteProduct,
-  getProducts,
   updateProduct,
 } from "./services/api";
+import useProducts from "./hooks/useProducts";
 import type { Product, ProductInput } from "./types/product";
 
 function App() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [total, setTotal] = useState(0);
-
   const [page, setPage] = useState(1);
   const limit = 10;
+
+  const {
+    products,
+    total,
+    isLoading,
+    isRefreshing,
+    error,
+    loadProducts,
+  } = useProducts(page, limit);
+
   const totalPages = Math.ceil(total / limit);
 
   const [searchTerm, setSearchTerm] = useState("");
 
-  const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(
+    null
+  );
 
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(
+    null
+  );
 
   const [formData, setFormData] = useState<ProductInput>({
     name: "",
     price: 0,
     stock: 0,
   });
-
-  async function loadProducts(isRefresh = false) {
-    if (isRefresh || products.length > 0) {
-      setIsRefreshing(true);
-    } else {
-      setIsLoading(true);
-    }
-
-    setError(null);
-
-    try {
-      const data = await getProducts(page, limit);
-
-      setProducts(data.items);
-      setTotal(data.total);
-    } catch {
-      setError("Unable to load products. Please check the Inventory API.");
-    } finally {
-      if (isRefresh || products.length > 0) {
-        setIsRefreshing(false);
-      } else {
-        setIsLoading(false);
-      }
-    }
-  }
-
-  useEffect(() => {
-    loadProducts();
-  }, [page]);
 
   const normalizedSearchTerm = searchTerm.trim().toLowerCase();
 
@@ -88,7 +66,8 @@ function App() {
   ).length;
 
   const inventoryValue = products.reduce(
-    (total, product) => total + product.price * product.stock,
+    (totalValue, product) =>
+      totalValue + product.price * product.stock,
     0
   );
 
@@ -173,7 +152,6 @@ function App() {
     setIsSaving(true);
     setFormError(null);
     setSuccessMessage(null);
-    setError(null);
 
     try {
       if (editingProduct) {
@@ -224,10 +202,8 @@ function App() {
       return;
     }
 
-    setError(null);
     setFormError(null);
     setSuccessMessage(null);
-    setIsRefreshing(true);
 
     try {
       await deleteProduct(product.id);
@@ -240,9 +216,7 @@ function App() {
         await loadProducts(true);
       }
     } catch {
-      setError("Unable to delete product. Please try again.");
-    } finally {
-      setIsRefreshing(false);
+      setFormError("Unable to delete product. Please try again.");
     }
   }
 
@@ -297,8 +271,8 @@ function App() {
               <h3>Product inventory</h3>
 
               <p>
-                Manage your products, stock levels and inventory information
-                from one place.
+                Manage your products, stock levels and inventory
+                information from one place.
               </p>
             </div>
 
@@ -311,7 +285,9 @@ function App() {
           </div>
 
           {successMessage && (
-            <div className="success-message">{successMessage}</div>
+            <div className="success-message">
+              {successMessage}
+            </div>
           )}
 
           {isFormOpen && (
@@ -442,7 +418,9 @@ function App() {
                         (currentPage) => currentPage + 1
                       )
                     }
-                    disabled={page === totalPages}
+                    disabled={
+                      page === totalPages || totalPages === 0
+                    }
                   >
                     Next
                   </button>
