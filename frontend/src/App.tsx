@@ -1,5 +1,5 @@
 import { useState } from "react";
-
+import useInventoryStats from "./hooks/useInventoryStats";
 import "./App.css";
 import ProductForm from "./components/ProductForm";
 import ProductStats from "./components/ProductStats";
@@ -61,15 +61,8 @@ function App() {
   const firstProduct = total === 0 ? 0 : (page - 1) * limit + 1;
   const lastProduct = Math.min(page * limit, total);
 
-  const lowStockCount = products.filter(
-    (product) => product.stock <= 5
-  ).length;
-
-  const inventoryValue = products.reduce(
-    (totalValue, product) =>
-      totalValue + product.price * product.stock,
-    0
-  );
+  const { lowStockCount, inventoryValue } =
+    useInventoryStats(products);
 
   function handleFormChange(
     event: React.ChangeEvent<HTMLInputElement>
