@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Pagination from "./components/Pagination";
 import useInventoryStats from "./hooks/useInventoryStats";
 import "./App.css";
 import ProductForm from "./components/ProductForm";
@@ -382,42 +383,19 @@ function App() {
                   />
                 )}
 
-                <div className="pagination">
-                  <span>
-                    Showing {firstProduct}–{lastProduct} of {total}{" "}
-                    products
-                  </span>
-
-                  <button
-                    className="secondary-button"
-                    onClick={() =>
-                      setPage(
-                        (currentPage) => currentPage - 1
-                      )
-                    }
-                    disabled={page === 1}
-                  >
-                    Previous
-                  </button>
-
-                  <span>
-                    Page {page} of {totalPages}
-                  </span>
-
-                  <button
-                    className="secondary-button"
-                    onClick={() =>
-                      setPage(
-                        (currentPage) => currentPage + 1
-                      )
-                    }
-                    disabled={
-                      page === totalPages || totalPages === 0
-                    }
-                  >
-                    Next
-                  </button>
-                </div>
+             <Pagination
+  page={page}
+  totalPages={totalPages}
+  firstItem={firstProduct}
+  lastItem={lastProduct}
+  totalItems={total}
+  onPrevious={() =>
+    setPage((currentPage) => currentPage - 1)
+  }
+  onNext={() =>
+    setPage((currentPage) => currentPage + 1)
+  }
+/>
               </>
             )}
           </section>
