@@ -1,4 +1,5 @@
 import { useState } from "react";
+import ProductToolbar from "./components/ProductToolbar";
 import Pagination from "./components/Pagination";
 import useInventoryStats from "./hooks/useInventoryStats";
 import "./App.css";
@@ -310,28 +311,14 @@ function App() {
                 <h3>Product list</h3>
               </div>
 
-              <div className="product-actions">
-                <input
-                  type="text"
-                  placeholder="Search products..."
-                  value={searchTerm}
-                  onChange={(event) =>
-                    setSearchTerm(event.target.value)
-                  }
-                />
-
-                <span className="search-result-count">
-                  {searchResultLabel}
-                </span>
-
-                <button
-                  className="secondary-button"
-                  onClick={() => loadProducts(true)}
-                  disabled={isLoading || isRefreshing}
-                >
-                  {isRefreshing ? "Refreshing..." : "Refresh"}
-                </button>
-              </div>
+              <ProductToolbar
+  searchTerm={searchTerm}
+  resultLabel={searchResultLabel}
+  isLoading={isLoading}
+  isRefreshing={isRefreshing}
+  onSearchChange={setSearchTerm}
+  onRefresh={() => loadProducts(true)}
+/>
             </div>
 
             {isLoading ? (
