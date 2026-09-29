@@ -3,6 +3,7 @@ import type {
   ProductInput,
   ProductListResponse,
 } from "../types/product";
+import { handleApiResponse } from "./apiError";
 
 const API_URL =
   import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
@@ -15,11 +16,10 @@ export async function getProducts(
     `${API_URL}/products?page=${page}&limit=${limit}`
   );
 
-  if (!response.ok) {
-    throw new Error("Failed to fetch products");
-  }
-
-  return response.json();
+  return handleApiResponse<ProductListResponse>(
+    response,
+    "Failed to fetch products"
+  );
 }
 
 export async function createProduct(
@@ -33,11 +33,10 @@ export async function createProduct(
     body: JSON.stringify(product),
   });
 
-  if (!response.ok) {
-    throw new Error("Failed to create product");
-  }
-
-  return response.json();
+  return handleApiResponse<Product>(
+    response,
+    "Failed to create product"
+  );
 }
 
 export async function updateProduct(
@@ -52,11 +51,10 @@ export async function updateProduct(
     body: JSON.stringify(product),
   });
 
-  if (!response.ok) {
-    throw new Error("Failed to update product");
-  }
-
-  return response.json();
+  return handleApiResponse<Product>(
+    response,
+    "Failed to update product"
+  );
 }
 
 export async function deleteProduct(productId: number): Promise<void> {
@@ -65,6 +63,18 @@ export async function deleteProduct(productId: number): Promise<void> {
   });
 
   if (!response.ok) {
-    throw new Error("Failed to delete product");
+    let message = "Failed to delete product";
+
+    try {
+      const data = await response.json();
+
+      if (typeof data.detail === "string") {
+        message = data.detail;
+      }
+    } catch {
+      // Keep the fallback message when the response has no JSON body.
+    }
+
+    throw new Error(message);
   }
 }
