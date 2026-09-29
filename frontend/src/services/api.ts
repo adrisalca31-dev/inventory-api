@@ -12,8 +12,10 @@ export async function getProducts(
   page = 1,
   limit = 10
 ): Promise<ProductListResponse> {
+  const skip = (page - 1) * limit;
+
   const response = await fetch(
-    `${API_URL}/products?page=${page}&limit=${limit}`
+    `${API_URL}/products?skip=${skip}&limit=${limit}`
   );
 
   return handleApiResponse<ProductListResponse>(
