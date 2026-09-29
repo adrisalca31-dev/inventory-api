@@ -1,4 +1,5 @@
 import { useState } from "react";
+import useApiStatus from "./hooks/useApiStatus";
 import ProductToolbar from "./components/ProductToolbar";
 import Pagination from "./components/Pagination";
 import useInventoryStats from "./hooks/useInventoryStats";
@@ -17,6 +18,7 @@ import type { Product, ProductInput } from "./types/product";
 function App() {
   const [page, setPage] = useState(1);
   const limit = 10;
+  const { isOnline, isChecking } = useApiStatus();
 
   const {
     products,
@@ -252,10 +254,14 @@ function App() {
             <h2>Dashboard</h2>
           </div>
 
-          <div className="status">
-            <span className="status-dot"></span>
-            API Online
-          </div>
+          <div className={`status ${isOnline ? "online" : "offline"}`}>
+  <span className="status-dot"></span>
+  {isChecking
+    ? "Checking API..."
+    : isOnline
+      ? "API Online"
+      : "API Offline"}
+</div>
         </header>
 
         <section className="content">
