@@ -614,3 +614,74 @@ def test_create_product_with_negative_price(client):
     )
 
     assert response.status_code == 422
+
+def test_update_product_invalid_price(client):
+    create_response = client.post(
+        "/products",
+        json={
+            "name": "Keyboard",
+            "price": 50.00,
+            "stock": 15,
+        },
+    )
+
+    product_id = create_response.json()["id"]
+
+    response = client.put(
+        f"/products/{product_id}",
+        json={
+            "name": "Keyboard",
+            "price": 0,
+            "stock": 15,
+        },
+    )
+
+    assert response.status_code == 422
+
+
+def test_update_product_invalid_stock(client):
+    create_response = client.post(
+        "/products",
+        json={
+            "name": "Keyboard",
+            "price": 50.00,
+            "stock": 15,
+        },
+    )
+
+    product_id = create_response.json()["id"]
+
+    response = client.put(
+        f"/products/{product_id}",
+        json={
+            "name": "Keyboard",
+            "price": 50.00,
+            "stock": -1,
+        },
+    )
+
+    assert response.status_code == 422
+
+
+def test_update_product_empty_name(client):
+    create_response = client.post(
+        "/products",
+        json={
+            "name": "Keyboard",
+            "price": 50.00,
+            "stock": 15,
+        },
+    )
+
+    product_id = create_response.json()["id"]
+
+    response = client.put(
+        f"/products/{product_id}",
+        json={
+            "name": "",
+            "price": 50.00,
+            "stock": 15,
+        },
+    )
+
+    assert response.status_code == 422
