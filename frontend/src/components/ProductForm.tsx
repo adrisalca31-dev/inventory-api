@@ -47,7 +47,9 @@ function ProductForm({
             type="text"
             value={formData.name}
             onChange={onChange}
-            placeholder="Product name"
+            placeholder="Enter product name"
+            maxLength={100}
+            disabled={isSaving}
           />
         </label>
 
@@ -57,10 +59,11 @@ function ProductForm({
           <input
             name="price"
             type="number"
-            min="0"
+            min="0.01"
             step="0.01"
             value={formData.price}
             onChange={onChange}
+            disabled={isSaving}
           />
         </label>
 
@@ -74,10 +77,15 @@ function ProductForm({
             step="1"
             value={formData.stock}
             onChange={onChange}
+            disabled={isSaving}
           />
         </label>
 
-        {formError && <p className="form-error">{formError}</p>}
+        {formError && (
+          <p className="form-error" role="alert">
+            {formError}
+          </p>
+        )}
 
         <button
           className="primary-button"

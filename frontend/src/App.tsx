@@ -83,20 +83,38 @@ function App() {
   }
 
   function validateProductForm(): string | null {
-    if (!formData.name.trim()) {
-      return "Product name is required.";
-    }
+  const name = formData.name.trim();
 
-    if (formData.price < 0) {
-      return "Price cannot be negative.";
-    }
-
-    if (formData.stock < 0) {
-      return "Stock cannot be negative.";
-    }
-
-    return null;
+  if (!name) {
+    return "Product name is required.";
   }
+
+  if (name.length > 100) {
+    return "Product name must be 100 characters or less.";
+  }
+
+  if (!Number.isFinite(formData.price)) {
+    return "Price must be a valid number.";
+  }
+
+  if (formData.price <= 0) {
+    return "Price must be greater than 0.";
+  }
+
+  if (!Number.isFinite(formData.stock)) {
+    return "Stock must be a valid number.";
+  }
+
+  if (!Number.isInteger(formData.stock)) {
+    return "Stock must be a whole number.";
+  }
+
+  if (formData.stock < 0) {
+    return "Stock cannot be negative.";
+  }
+
+  return null;
+}
 
   function openCreateForm() {
     setEditingProduct(null);
