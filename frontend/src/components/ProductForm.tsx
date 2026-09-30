@@ -26,6 +26,12 @@ function ProductForm({
           <p className="section-label">Products</p>
 
           <h3>{editingProduct ? "Edit product" : "Add product"}</h3>
+
+          <p className="form-description">
+            {editingProduct
+              ? "Update the product information below."
+              : "Enter the product information to add it to your inventory."}
+          </p>
         </div>
 
         <button
@@ -39,10 +45,11 @@ function ProductForm({
       </div>
 
       <form onSubmit={onSubmit} className="product-form">
-        <label>
-          Product name
+        <div className="form-field">
+          <label htmlFor="product-name">Product name</label>
 
           <input
+            id="product-name"
             name="name"
             type="text"
             value={formData.name}
@@ -51,26 +58,36 @@ function ProductForm({
             maxLength={100}
             disabled={isSaving}
           />
-        </label>
 
-        <label>
-          Price
+          <span className="field-hint">
+            Maximum 100 characters.
+          </span>
+        </div>
+
+        <div className="form-field">
+          <label htmlFor="product-price">Price</label>
+
+          <div className="input-with-prefix">
+            <span>$</span>
+
+            <input
+              id="product-price"
+              name="price"
+              type="number"
+              min="0.01"
+              step="0.01"
+              value={formData.price}
+              onChange={onChange}
+              disabled={isSaving}
+            />
+          </div>
+        </div>
+
+        <div className="form-field">
+          <label htmlFor="product-stock">Stock</label>
 
           <input
-            name="price"
-            type="number"
-            min="0.01"
-            step="0.01"
-            value={formData.price}
-            onChange={onChange}
-            disabled={isSaving}
-          />
-        </label>
-
-        <label>
-          Stock
-
-          <input
+            id="product-stock"
             name="stock"
             type="number"
             min="0"
@@ -79,25 +96,41 @@ function ProductForm({
             onChange={onChange}
             disabled={isSaving}
           />
-        </label>
+
+          <span className="field-hint">
+            Stock must be a whole number.
+          </span>
+        </div>
 
         {formError && (
-          <p className="form-error" role="alert">
+          <div className="form-error" role="alert">
+            <span>!</span>
             {formError}
-          </p>
+          </div>
         )}
 
-        <button
-          className="primary-button"
-          type="submit"
-          disabled={isSaving}
-        >
-          {isSaving
-            ? "Saving..."
-            : editingProduct
-              ? "Save changes"
-              : "Create product"}
-        </button>
+        <div className="form-actions">
+          <button
+            className="secondary-button"
+            type="button"
+            onClick={onCancel}
+            disabled={isSaving}
+          >
+            Cancel
+          </button>
+
+          <button
+            className="primary-button"
+            type="submit"
+            disabled={isSaving}
+          >
+            {isSaving
+              ? "Saving..."
+              : editingProduct
+                ? "Save changes"
+                : "Create product"}
+          </button>
+        </div>
       </form>
     </section>
   );
