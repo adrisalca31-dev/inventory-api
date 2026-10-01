@@ -1,40 +1,32 @@
 # Inventory API
 
-A full-stack inventory management application built to practice backend development, REST APIs, database integration, testing, and frontend integration.
+A full-stack inventory management application built with FastAPI, PostgreSQL, React, and TypeScript.
 
-The project provides a REST API for managing products and a React frontend that consumes the API through HTTP requests.
+The project provides a REST API for managing products and a web dashboard that consumes the API to display and manage inventory information.
 
-## Features
+## Project Overview
 
-### Backend
+Inventory API was developed as a portfolio project focused on building a complete backend application and connecting it to a frontend interface.
 
-- Product CRUD operations
-- Product search
-- Pagination
-- Sorting
-- Input validation
-- Proper HTTP status codes
+The project covers:
+
+- REST API development
+- CRUD operations
 - PostgreSQL database integration
 - SQLAlchemy ORM
-- Automated API tests with pytest
-
-### Frontend
-
-- Product dashboard
-- Product creation
-- Product editing
-- Product deletion
-- Product search
-- Pagination controls
-- Inventory statistics
-- Stock status indicators
-- Loading states
+- Request validation
+- Pagination
+- Sorting
+- Search
+- Stock filtering
 - Error handling
-- Success feedback
-- API refresh functionality
-- Production build with Vite
+- Automated testing
+- CORS configuration
+- React frontend integration
+- Responsive interface design
+- Environment configuration
 
-## Tech Stack
+## Technologies
 
 ### Backend
 
@@ -43,8 +35,9 @@ The project provides a REST API for managing products and a React frontend that 
 - SQLAlchemy
 - PostgreSQL
 - Pydantic
+- Pytest
+- HTTPX
 - Uvicorn
-- pytest
 
 ### Frontend
 
@@ -53,29 +46,58 @@ The project provides a REST API for managing products and a React frontend that 
 - Vite
 - CSS
 
+### Development Tools
+
+- Git
+- GitHub
+- VS Code
+- PostgreSQL.app
+- DBeaver
+
 ## Project Structure
 
 ```text
 02-inventory-api/
 │
 ├── app/
-│   ├── crud/
-│   ├── models/
-│   ├── schemas/
+│   ├── routers/
+│   │   └── products.py
+│   ├── config.py
+│   ├── crud.py
 │   ├── database.py
-│   └── main.py
+│   ├── exceptions.py
+│   ├── main.py
+│   ├── models.py
+│   └── schemas.py
+│
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── Pagination.tsx
+│   │   │   ├── ProductForm.tsx
+│   │   │   ├── ProductStats.tsx
+│   │   │   ├── ProductTable.tsx
+│   │   │   └── ProductToolbar.tsx
+│   │   ├── hooks/
+│   │   │   ├── useApiStatus.ts
+│   │   │   ├── useInventoryStats.ts
+│   │   │   └── useProducts.ts
+│   │   ├── services/
+│   │   │   ├── api.ts
+│   │   │   └── apiError.ts
+│   │   ├── types/
+│   │   │   └── product.ts
+│   │   ├── App.tsx
+│   │   ├── App.css
+│   │   └── index.css
+│   ├── .env.example
+│   └── package.json
 │
 ├── tests/
 │   ├── conftest.py
 │   └── test_products.py
 │
-├── frontend/
-│   └── src/
-│       ├── components/
-│       ├── hooks/
-│       ├── services/
-│       ├── types/
-│       └── App.tsx
-│
-├── requirements.txt
-└── README.md
+├── .env
+├── .gitignore
+├── README.md
+└── requirements.txt
