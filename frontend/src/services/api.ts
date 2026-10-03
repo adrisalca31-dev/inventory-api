@@ -10,12 +10,20 @@ const API_URL =
 
 export async function getProducts(
   page = 1,
-  limit = 10
+  limit = 10,
+  search = ""
 ): Promise<ProductListResponse> {
-  const skip = (page - 1) * limit;
+  const params = new URLSearchParams({
+    skip: String((page - 1) * limit),
+    limit: String(limit),
+  });
+
+  if (search.trim()) {
+    params.set("search", search.trim());
+  }
 
   const response = await fetch(
-    `${API_URL}/products?skip=${skip}&limit=${limit}`
+    `${API_URL}/products?${params.toString()}`
   );
 
   return handleApiResponse<ProductListResponse>(
@@ -29,9 +37,7 @@ export async function createProduct(
 ): Promise<Product> {
   const response = await fetch(`${API_URL}/products`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(product),
   });
 
@@ -47,9 +53,7 @@ export async function updateProduct(
 ): Promise<Product> {
   const response = await fetch(`${API_URL}/products/${productId}`, {
     method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(product),
   });
 
@@ -59,7 +63,9 @@ export async function updateProduct(
   );
 }
 
-export async function deleteProduct(productId: number): Promise<void> {
+export async function deleteProduct(
+  productId: number
+): Promise<void> {
   const response = await fetch(`${API_URL}/products/${productId}`, {
     method: "DELETE",
   });
@@ -74,7 +80,7 @@ export async function deleteProduct(productId: number): Promise<void> {
         message = data.detail;
       }
     } catch {
-      // Keep the fallback message when the response has no JSON body.
+      // Keep the fallback message.
     }
 
     throw new Error(message);

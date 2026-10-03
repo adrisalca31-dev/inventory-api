@@ -1,27 +1,32 @@
+
 import { useState } from "react";
-import useApiStatus from "./hooks/useApiStatus";
-import ProductToolbar from "./components/ProductToolbar";
-import Pagination from "./components/Pagination";
-import useInventoryStats from "./hooks/useInventoryStats";
+
 import "./App.css";
+
+import useApiStatus from "./hooks/useApiStatus";
+import useProducts from "./hooks/useProducts";
+import useInventoryStats from "./hooks/useInventoryStats";
+
 import ProductForm from "./components/ProductForm";
 import ProductStats from "./components/ProductStats";
 import ProductTable from "./components/ProductTable";
+import ProductToolbar from "./components/ProductToolbar";
+import Pagination from "./components/Pagination";
+
 import {
   createProduct,
   deleteProduct,
   updateProduct,
 } from "./services/api";
-import useProducts from "./hooks/useProducts";
+
 import type { Product, ProductInput } from "./types/product";
 
-type View = "dashboard" | "products";
-
 function App() {
-  const [activeView, setActiveView] = useState<View>("dashboard");
-
   const [page, setPage] = useState(1);
   const limit = 10;
+
+  // Search state must exist before useProducts uses it.
+  const [searchTerm, setSearchTerm] = useState("");
 
   const { isOnline, isChecking } = useApiStatus();
 
@@ -32,11 +37,9 @@ function App() {
     isRefreshing,
     error,
     loadProducts,
-  } = useProducts(page, limit);
+  } = useProducts(page, limit, searchTerm);
 
   const totalPages = Math.ceil(total / limit);
-
-  const [searchTerm, setSearchTerm] = useState("");
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -55,28 +58,18 @@ function App() {
     stock: 0,
   });
 
-  const normalizedSearchTerm = searchTerm.trim().toLowerCase();
-
-  const filteredProducts = products.filter((product) =>
-    product.name.toLowerCase().includes(normalizedSearchTerm)
-  );
-
   const searchResultLabel = searchTerm.trim()
-    ? `${filteredProducts.length} ${
-        filteredProducts.length === 1 ? "product" : "products"
-      } found`
+    ? `${total} ${total === 1 ? "product" : "products"} found`
     : `${total} products`;
 
   const firstProduct = total === 0 ? 0 : (page - 1) * limit + 1;
   const lastProduct = Math.min(page * limit, total);
 
-  const { lowStockCount, inventoryValue } =
-    useInventoryStats(products);
+  const { lowStockCount, inventoryValue } = useInventoryStats(products);
 
-  function handleNavigation(view: View) {
-    setActiveView(view);
-    setSuccessMessage(null);
-    setFormError(null);
+  function handleSearchChange(value: string) {
+    setSearchTerm(value);
+    setPage(1);
   }
 
   function handleFormChange(
@@ -153,7 +146,6 @@ function App() {
     setFormError(null);
     setSuccessMessage(null);
     setIsFormOpen(true);
-    setActiveView("products");
   }
 
   function closeForm() {
@@ -181,21 +173,17 @@ function App() {
     setSuccessMessage(null);
 
     try {
-      if (editingProduct) {
-        await updateProduct(editingProduct.id, {
-          name: formData.name.trim(),
-          price: formData.price,
-          stock: formData.stock,
-        });
+      const productData: ProductInput = {
+        name: formData.name.trim(),
+        price: formData.price,
+        stock: formData.stock,
+      };
 
+      if (editingProduct) {
+        await updateProduct(editingProduct.id, productData);
         setSuccessMessage("Product updated successfully.");
       } else {
-        await createProduct({
-          name: formData.name.trim(),
-          price: formData.price,
-          stock: formData.stock,
-        });
-
+        await createProduct(productData);
         setSuccessMessage("Product created successfully.");
       }
 
@@ -259,28 +247,16 @@ function App() {
           </div>
         </div>
 
-        <nav className="navigation" aria-label="Main navigation">
-          <button
-            type="button"
-            className={`nav-item ${
-              activeView === "dashboard" ? "active" : ""
-            }`}
-            onClick={() => handleNavigation("dashboard")}
-          >
+        <nav className="navigation">
+          <a href="#" className="nav-item active">
             <span>▦</span>
             Dashboard
-          </button>
+          </a>
 
-          <button
-            type="button"
-            className={`nav-item ${
-              activeView === "products" ? "active" : ""
-            }`}
-            onClick={() => handleNavigation("products")}
-          >
+          <a href="#" className="nav-item">
             <span>□</span>
             Products
-          </button>
+          </a>
         </nav>
 
         <div className="sidebar-footer">
@@ -293,14 +269,12 @@ function App() {
         <header className="topbar">
           <div>
             <p className="eyebrow">Inventory Management</p>
-            <h2>
-              {activeView === "dashboard"
-                ? "Dashboard"
-                : "Products"}
-            </h2>
+            <h2>Dashboard</h2>
           </div>
 
-          <div className={`status ${isOnline ? "online" : "offline"}`}>
+          <div
+            className={`status ${isOnline ? "online" : "offline"}`}
+          >
             <span className="status-dot"></span>
 
             {isChecking
@@ -312,232 +286,145 @@ function App() {
         </header>
 
         <section className="content">
-          {activeView === "dashboard" ? (
-            <>
-              <div className="welcome">
-                <div>
-                  <p className="section-label">Overview</p>
+          <div className="welcome">
+            <div>
+              <p className="section-label">Overview</p>
 
-                  <h3>Product inventory</h3>
+              <h3>Product inventory</h3>
 
-                  <p>
-                    Manage your products, stock levels and inventory
-                    information from one place.
-                  </p>
-                </div>
+              <p>
+                Manage your products, stock levels and inventory
+                information from one place.
+              </p>
+            </div>
 
-                <button
-                  className="primary-button"
-                  onClick={openCreateForm}
-                >
-                  + Add product
-                </button>
-              </div>
+            <button
+              type="button"
+              className="primary-button"
+              onClick={openCreateForm}
+            >
+              + Add product
+            </button>
+          </div>
 
-              {successMessage && (
-                <div className="success-message">
-                  {successMessage}
-                </div>
-              )}
-
-              {isFormOpen && (
-                <ProductForm
-                  editingProduct={editingProduct}
-                  formData={formData}
-                  isSaving={isSaving}
-                  formError={formError}
-                  onChange={handleFormChange}
-                  onSubmit={handleSaveProduct}
-                  onCancel={closeForm}
-                />
-              )}
-
-              <ProductStats
-                total={total}
-                lowStock={lowStockCount}
-                inventoryValue={inventoryValue}
-                isLoading={isLoading}
-              />
-
-              <section className="dashboard-summary">
-                <div>
-                  <p className="section-label">Inventory overview</p>
-
-                  <h3>Keep your inventory under control</h3>
-
-                  <p>
-                    Review your current inventory statistics and
-                    manage individual products from the Products
-                    section.
-                  </p>
-                </div>
-
-                <div className="dashboard-summary-details">
-                  <div>
-                    <span>Current products</span>
-                    <strong>
-                      {isLoading ? "—" : total}
-                    </strong>
-                  </div>
-
-                  <div>
-                    <span>Low stock items</span>
-                    <strong>
-                      {isLoading ? "—" : lowStockCount}
-                    </strong>
-                  </div>
-
-                  <div>
-                    <span>Inventory value</span>
-                    <strong>
-                      {isLoading
-                        ? "—"
-                        : `$${inventoryValue.toFixed(2)}`}
-                    </strong>
-                  </div>
-                </div>
-
-                <button
-                  className="secondary-button"
-                  type="button"
-                  onClick={() => handleNavigation("products")}
-                >
-                  View products
-                </button>
-              </section>
-            </>
-          ) : (
-            <>
-              <div className="welcome">
-                <div>
-                  <p className="section-label">Inventory</p>
-
-                  <h3>Products</h3>
-
-                  <p>
-                    Create, search, edit and manage the products
-                    stored in your inventory.
-                  </p>
-                </div>
-
-                <button
-                  className="primary-button"
-                  onClick={openCreateForm}
-                >
-                  + Add product
-                </button>
-              </div>
-
-              {successMessage && (
-                <div className="success-message">
-                  {successMessage}
-                </div>
-              )}
-
-              {isFormOpen && (
-                <ProductForm
-                  editingProduct={editingProduct}
-                  formData={formData}
-                  isSaving={isSaving}
-                  formError={formError}
-                  onChange={handleFormChange}
-                  onSubmit={handleSaveProduct}
-                  onCancel={closeForm}
-                />
-              )}
-
-              <section className="products-card">
-                <div className="card-header">
-                  <div>
-                    <p className="section-label">Products</p>
-                    <h3>Product list</h3>
-                  </div>
-
-                  <ProductToolbar
-                    searchTerm={searchTerm}
-                    resultLabel={searchResultLabel}
-                    isLoading={isLoading}
-                    isRefreshing={isRefreshing}
-                    onSearchChange={setSearchTerm}
-                    onRefresh={() => loadProducts(true)}
-                  />
-                </div>
-
-                {isLoading ? (
-                  <div className="empty-state">
-                    <div className="loading-spinner"></div>
-
-                    <h4>Loading products...</h4>
-
-                    <p>
-                      We are retrieving the latest inventory
-                      information from the API.
-                    </p>
-                  </div>
-                ) : error ? (
-                  <div className="empty-state error-state">
-                    <div className="empty-icon">!</div>
-
-                    <h4>Unable to load products</h4>
-
-                    <p>{error}</p>
-
-                    <button
-                      className="primary-button"
-                      onClick={() => loadProducts(true)}
-                      disabled={isRefreshing}
-                    >
-                      {isRefreshing
-                        ? "Refreshing..."
-                        : "Try again"}
-                    </button>
-                  </div>
-                ) : (
-                  <>
-                    {searchTerm.trim() &&
-                    filteredProducts.length === 0 ? (
-                      <div className="empty-state">
-                        <div className="empty-icon">⌕</div>
-
-                        <h4>No products found</h4>
-
-                        <p>
-                          No products match your search. Try a
-                          different product name.
-                        </p>
-                      </div>
-                    ) : (
-                      <ProductTable
-                         products={products}
-                         isLoading={isLoading}
-                         error={error}
-                         onEdit={openEditForm}
-                         onDelete={handleDeleteProduct}
-                       />
-                    )}
-
-                    <Pagination
-                      page={page}
-                      totalPages={totalPages}
-                      firstItem={firstProduct}
-                      lastItem={lastProduct}
-                      totalItems={total}
-                      onPrevious={() =>
-                        setPage(
-                          (currentPage) => currentPage - 1
-                        )
-                      }
-                      onNext={() =>
-                        setPage(
-                          (currentPage) => currentPage + 1
-                        )
-                      }
-                    />
-                  </>
-                )}
-              </section>
-            </>
+          {successMessage && (
+            <div className="success-message" role="status">
+              {successMessage}
+            </div>
           )}
+
+          {formError && !isFormOpen && (
+            <div className="error-message" role="alert">
+              {formError}
+            </div>
+          )}
+
+          {isFormOpen && (
+            <ProductForm
+              editingProduct={editingProduct}
+              formData={formData}
+              isSaving={isSaving}
+              formError={formError}
+              onChange={handleFormChange}
+              onSubmit={handleSaveProduct}
+              onCancel={closeForm}
+            />
+          )}
+
+          <ProductStats
+            total={total}
+            lowStock={lowStockCount}
+            inventoryValue={inventoryValue}
+            isLoading={isLoading}
+          />
+
+          <section className="products-card">
+            <div className="card-header">
+              <div>
+                <p className="section-label">Products</p>
+                <h3>Product list</h3>
+              </div>
+
+              <ProductToolbar
+                searchTerm={searchTerm}
+                resultLabel={searchResultLabel}
+                isLoading={isLoading}
+                isRefreshing={isRefreshing}
+                onSearchChange={handleSearchChange}
+                onRefresh={() => loadProducts(true)}
+              />
+            </div>
+
+            {isLoading ? (
+              <div className="empty-state">
+                <div className="loading-spinner"></div>
+
+                <h4>Loading products...</h4>
+
+                <p>
+                  We are retrieving the latest inventory information
+                  from the API.
+                </p>
+              </div>
+            ) : error ? (
+              <div className="empty-state error-state">
+                <div className="empty-icon">!</div>
+
+                <h4>Unable to load products</h4>
+
+                <p>{error}</p>
+
+                <button
+                  type="button"
+                  className="primary-button"
+                  onClick={() => loadProducts(true)}
+                  disabled={isRefreshing}
+                >
+                  {isRefreshing ? "Refreshing..." : "Try again"}
+                </button>
+              </div>
+            ) : total === 0 ? (
+              <div className="empty-state">
+                <div className="empty-icon">⌕</div>
+
+                <h4>
+                  {searchTerm.trim()
+                    ? "No products found"
+                    : "No products yet"}
+                </h4>
+
+                <p>
+                  {searchTerm.trim()
+                    ? "No products match your search. Try a different product name."
+                    : "Add your first product to start managing your inventory."}
+                </p>
+              </div>
+            ) : (
+              <>
+                <ProductTable
+                  products={products}
+                  isLoading={isLoading}
+                  error={error}
+                  onEdit={openEditForm}
+                  onDelete={handleDeleteProduct}
+                />
+
+                <Pagination
+                  page={page}
+                  totalPages={totalPages}
+                  firstItem={firstProduct}
+                  lastItem={lastProduct}
+                  totalItems={total}
+                  onPrevious={() =>
+                    setPage((currentPage) => currentPage - 1)
+                  }
+                  onNext={() =>
+                    setPage((currentPage) => currentPage + 1)
+                  }
+                />
+              </>
+            )}
+          </section>
         </section>
       </main>
     </div>
