@@ -259,10 +259,6 @@ function App() {
           </a>
         </nav>
 
-        <div className="sidebar-footer">
-          <span>Inventory API</span>
-          <small>FastAPI + React</small>
-        </div>
       </aside>
 
       <main className="main-content">

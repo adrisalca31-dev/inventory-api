@@ -1233,3 +1233,143 @@
     min-width: 68px;
   }
 }
+
+
+/* Final interface polish */
+
+.sidebar-footer {
+  display: none;
+}
+
+/* Keep the sidebar and main content aligned */
+.main-content {
+  margin-left: 0;
+  min-width: 0;
+}
+
+/* Cleaner product card header */
+.card-header {
+  gap: 20px;
+}
+
+.card-header > div:first-child {
+  flex-shrink: 0;
+}
+
+.product-actions {
+  min-width: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.search-field {
+  min-width: 0;
+  flex-shrink: 1;
+}
+
+/* Clear separation between pagination elements */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px 24px;
+  padding-top: 20px;
+}
+
+.pagination-summary {
+  color: #687386;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.pagination-page {
+  color: #374151;
+  font-size: 13px;
+  white-space: nowrap;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.pagination-controls .secondary-button {
+  min-height: 40px;
+  padding: 0 16px;
+  white-space: nowrap;
+}
+
+.secondary-button:focus-visible,
+.primary-button:focus-visible {
+  outline: 2px solid #64748b;
+  outline-offset: 3px;
+}
+
+/* Tablet */
+@media (max-width: 800px) {
+  .main-content {
+    margin-left: 0;
+  }
+
+  .card-header {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .product-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .pagination {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .pagination-controls {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
+/* Mobile */
+@media (max-width: 520px) {
+  .main-content {
+    margin-left: 0;
+  }
+
+  .products-card {
+    padding: 16px;
+  }
+
+  .product-actions {
+    align-items: stretch;
+  }
+
+  .pagination-controls {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .pagination-controls .secondary-button:first-child {
+    justify-self: start;
+  }
+
+  .pagination-controls .secondary-button:last-child {
+    justify-self: end;
+  }
+
+  .pagination-page {
+    white-space: nowrap;
+  }
+}

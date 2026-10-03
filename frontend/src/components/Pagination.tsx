@@ -1,3 +1,4 @@
+
 interface PaginationProps {
   page: number;
   totalPages: number;
@@ -17,31 +18,37 @@ function Pagination({
   onPrevious,
   onNext,
 }: PaginationProps) {
+  const hasProducts = totalItems > 0;
+
   return (
     <div className="pagination">
-      <span>
+      <span className="pagination-summary">
         Showing {firstItem}–{lastItem} of {totalItems} products
       </span>
 
-      <button
-        className="secondary-button"
-        onClick={onPrevious}
-        disabled={page === 1}
-      >
-        Previous
-      </button>
+      <div className="pagination-controls">
+        <button
+          type="button"
+          className="secondary-button"
+          onClick={onPrevious}
+          disabled={page <= 1 || !hasProducts}
+        >
+          Previous
+        </button>
 
-      <span>
-        Page {page} of {totalPages}
-      </span>
+        <span className="pagination-page">
+          Page {totalPages > 0 ? page : 0} of {totalPages}
+        </span>
 
-      <button
-        className="secondary-button"
-        onClick={onNext}
-        disabled={page === totalPages || totalPages === 0}
-      >
-        Next
-      </button>
+        <button
+          type="button"
+          className="secondary-button"
+          onClick={onNext}
+          disabled={page >= totalPages || !hasProducts}
+        >
+          Next
+        </button>
+      </div>
     </div>
   );
 }
