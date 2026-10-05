@@ -2,25 +2,46 @@ import type { Product } from "../types/product";
 
 interface ProductTableProps {
   products: Product[];
-  onEdit?: (product: Product) => void;
-  onDelete?: (product: Product) => void;
+  isLoading: boolean;
+  error: string | null;
+  onEdit: (product: Product) => void;
+  onDelete: (product: Product) => void;
 }
 
 function ProductTable({
   products,
+  isLoading,
+  error,
   onEdit,
   onDelete,
 }: ProductTableProps) {
+  if (isLoading) {
+    return (
+      <div className="table-state">
+        <div className="state-icon loading-icon">↻</div>
+        <h3>Loading products</h3>
+        <p>We're getting the latest inventory information.</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="table-state table-state-error">
+        <div className="state-icon error-icon">!</div>
+        <h3>Unable to load products</h3>
+        <p>{error}</p>
+      </div>
+    );
+  }
+
   if (products.length === 0) {
     return (
-      <div className="empty-state">
-        <div className="empty-icon">▦</div>
-
-        <h4>No products yet</h4>
-
+      <div className="table-state">
+        <div className="state-icon empty-icon">▦</div>
+        <h3>No products found</h3>
         <p>
-          Your products will appear here once they are loaded from the
-          Inventory API.
+          There are no products to display with the current search.
         </p>
       </div>
     );
@@ -43,16 +64,7 @@ function ProductTable({
           {products.map((product) => (
             <tr key={product.id}>
               <td>
-                <div className="product-name">
-                  <span className="product-avatar">
-                    {product.name.charAt(0).toUpperCase()}
-                  </span>
-
-                  <div>
-                    <strong>{product.name}</strong>
-                    <small>Product #{product.id}</small>
-                  </div>
-                </div>
+                <strong>{product.name}</strong>
               </td>
 
               <td>${product.price.toFixed(2)}</td>
@@ -62,39 +74,29 @@ function ProductTable({
               <td>
                 <span
                   className={
-                    product.stock === 0
-                      ? "stock-badge out"
-                      : product.stock <= 5
-                        ? "stock-badge low"
-                        : "stock-badge available"
+                    product.stock <= 5
+                      ? "stock-badge low"
+                      : "stock-badge"
                   }
                 >
-                  {product.stock === 0
-                    ? "Out of stock"
-                    : product.stock <= 5
-                      ? "Low stock"
-                      : "In stock"}
+                  {product.stock <= 5 ? "Low stock" : "In stock"}
                 </span>
               </td>
 
               <td>
-                <div className="product-actions">
+                <div className="table-actions">
                   <button
-                    className="secondary-button"
                     type="button"
-                    title={`Edit ${product.name}`}
-                    aria-label={`Edit ${product.name}`}
-                    onClick={() => onEdit?.(product)}
+                    className="table-action-button"
+                    onClick={() => onEdit(product)}
                   >
                     Edit
                   </button>
 
                   <button
-                    className="secondary-button"
                     type="button"
-                    title={`Delete ${product.name}`}
-                    aria-label={`Delete ${product.name}`}
-                    onClick={() => onDelete?.(product)}
+                    className="table-action-button danger"
+                    onClick={() => onDelete(product)}
                   >
                     Delete
                   </button>

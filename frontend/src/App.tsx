@@ -508,10 +508,12 @@ function App() {
                       </div>
                     ) : (
                       <ProductTable
-                        products={filteredProducts}
-                        onEdit={openEditForm}
-                        onDelete={handleDeleteProduct}
-                      />
+                         products={products}
+                         isLoading={isLoading}
+                         error={error}
+                         onEdit={openEditForm}
+                         onDelete={handleDeleteProduct}
+                       />
                     )}
 
                     <Pagination
