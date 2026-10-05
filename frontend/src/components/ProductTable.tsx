@@ -87,17 +87,21 @@ function ProductTable({
                 <div className="table-actions">
                   <button
                     type="button"
-                    className="table-action-button"
+                    className="table-action-button edit-action"
                     onClick={() => onEdit(product)}
+                    aria-label={`Edit ${product.name}`}
                   >
+                    <span className="action-icon">✎</span>
                     Edit
                   </button>
 
                   <button
                     type="button"
-                    className="table-action-button danger"
+                    className="table-action-button delete-action"
                     onClick={() => onDelete(product)}
+                    aria-label={`Delete ${product.name}`}
                   >
+                    <span className="action-icon">×</span>
                     Delete
                   </button>
                 </div>
